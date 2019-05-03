@@ -1,16 +1,13 @@
 #lang racket/base
 
 (require (for-syntax racket/base
-                     syntax/parse))
+                     syntax/parse)
+         "define-to-transformer.rkt")
 
 (provide to-list)
 
-(define-syntax (to-list stx)
-  (syntax-parse stx
-    #:track-literals
-    [()
-     #'(to-list #:reverse? #f)]
-    [(#:reverse? #t)
-     #'(null (lambda (acc x) (cons x acc)) values)]
-    [(#:reverse? #f)
-     #'(null (lambda (acc x) (cons x acc)) reverse)]))
+(define-to-transformer (to-list #:reverse? reverse?)
+  #:empty null
+  #:insert (λ (acc x)
+             (cons x acc))
+  #:collect (if reverse? values reverse))
