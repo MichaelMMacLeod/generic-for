@@ -1,51 +1,45 @@
 #lang racket/base
 
-(module+ test
-  (require rackunit))
+(require racket/match
+         (for-syntax racket/base
+                     syntax/apply-transformer
+                     syntax/parse))
 
-;; Notice
-;; To install (from within the package directory):
-;;   $ raco pkg install
-;; To install (once uploaded to pkgs.racket-lang.org):
-;;   $ raco pkg install <<name>>
-;; To uninstall:
-;;   $ raco pkg remove <<name>>
-;; To view documentation:
-;;   $ raco docs <<name>>
-;;
-;; For your convenience, we have included a LICENSE.txt file, which links to
-;; the GNU Lesser General Public License.
-;; If you would prefer to use a different license, replace LICENSE.txt with the
-;; desired license.
-;;
-;; Some users like to add a `private/` directory, place auxiliary files there,
-;; and require them in `main.rkt`.
-;;
-;; See the current version of the racket style guide here:
-;; http://docs.racket-lang.org/style/index.html
+(provide (rename-out [generic-for for]))
 
-;; Code here
+(define-syntax (generic-for stx)
+  (syntax-case stx ()
+    [(_ (to-transformer to-transformer-args ...)
+        ([(pattern ...) (from-transformer from-collection)] ...)
+        body ...)
+     (with-syntax ([(tmps ...)
+                    (generate-temporaries #'(from-collection ...))]
+                   [(to-empty to-insert to-collect)
+                    (local-apply-transformer
+                     (syntax-local-value #'to-transformer)
+                     #'(to-transformer-args ...)
+                     'expression)]
+                   [((from-take from-drop from-empty?) ...)
+                    (map syntax-local-value (syntax->list #'(from-transformer ...)))])
+       #'(let loop ([acc to-empty]
+                    [tmps from-collection] ...)
+           (cond [(and (from-empty? tmps) ...)
+                  (match-define-values (pattern ...) (from-take tmps)) ...
+                  (loop (call-with-values (lambda () body ...)
+                                          (lambda x (apply to-insert acc x)))
+                        (from-drop tmps) ...)]
+                 [else (to-collect acc)])))]))
 
+(define-syntax to-list
+  (syntax-parser
+    [(#:reverse? #t)
+     #'(null (lambda (acc x) (cons x acc)) values)]
+    [(#:reverse? #f)
+     #'(null (lambda (acc x) (cons x acc)) reverse)]))
 
+(define-syntax from-list
+  #'(car cdr pair?))
 
-(module+ test
-  ;; Any code in this `test` submodule runs when this file is run using DrRacket
-  ;; or with `raco test`. The code here does not run when this file is
-  ;; required by another module.
-
-  (check-equal? (+ 2 2) 4))
-
-(module+ main
-  ;; (Optional) main submodule. Put code here if you need it to be executed when
-  ;; this file is run using DrRacket or the `racket` executable.  The code here
-  ;; does not run when this file is required by another module. Documentation:
-  ;; http://docs.racket-lang.org/guide/Module_Syntax.html#%28part._main-and-test%29
-
-  (require racket/cmdline)
-  (define who (box "world"))
-  (command-line
-    #:program "my-program"
-    #:once-each
-    [("-n" "--name") name "Who to say hello to" (set-box! who name)]
-    #:args ()
-    (printf "hello ~a~n" (unbox who))))
+(generic-for (to-list #:reverse? #f)
+             ([(i) (from-list '(1 2 3 4 5))])
+  (+ i 2))
