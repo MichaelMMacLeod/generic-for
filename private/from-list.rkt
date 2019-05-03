@@ -2,15 +2,17 @@
 
 (require (for-syntax racket/base
                      syntax/parse)
-         "define-from-transformer.rkt")
+         "from-transformer.rkt")
 
 (provide from-list)
 
-(define-from-transformer from-list
-  [((~optional (~seq #:reverse? reverse?)
-               #:defaults ([reverse? #'#f]))
-    collection)
-   #:take car
-   #:drop cdr
-   #:not-empty? pair?
-   #:collection (if reverse? (reverse collection) collection)])
+(define-syntax (from-list stx)
+  (syntax-parse stx
+    #:track-literals
+    [((~optional (~seq #:reverse? reverse?)
+                 #:defaults ([reverse? #'#f]))
+      collection)
+     (from-transformer #:take #'car
+                       #:drop #'cdr
+                       #:not-empty? #'pair?
+                       #:collection #'(if reverse? (reverse collection) collection))]))
