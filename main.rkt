@@ -30,8 +30,11 @@
                         (from-drop tmps) ...)]
                  [else (to-collect acc)])))]))
 
-(define-syntax to-list
-  (syntax-parser
+(define-syntax (to-list stx)
+  (syntax-parse stx
+    #:track-literals
+    [()
+     #'(to-list #:reverse? #f)]
     [(#:reverse? #t)
      #'(null (lambda (acc x) (cons x acc)) values)]
     [(#:reverse? #f)
