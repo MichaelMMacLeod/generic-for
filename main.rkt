@@ -8,7 +8,7 @@
 (provide (rename-out [generic-for for]))
 
 (define-syntax (generic-for stx)
-  (syntax-case stx ()
+  (syntax-parse stx
     [(_ (to-transformer to-transformer-args ...)
         ([(pattern ...) (from-transformer from-transformer-args ...)] ...)
         body ...)
