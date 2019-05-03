@@ -12,21 +12,22 @@
     [(_ (to-transformer to-transformer-args ...)
         ([(pattern ...) (from-transformer from-transformer-args ...)] ...)
         body ...)
-     (with-syntax ([(tmps ...)
-                    (generate-temporaries #'(from-transformer ...))]
-                   [(to-empty to-insert to-collect)
-                    (local-apply-transformer
-                     (syntax-local-value #'to-transformer)
-                     #'(to-transformer-args ...)
-                     'expression)]
-                   [((from-take from-drop from-empty? from-collection) ...)
-                    (map (lambda (a b)
-                           (local-apply-transformer
-                            (syntax-local-value a)
-                            b
-                            'expression))
-                         (syntax->list #'(from-transformer ...))
-                         (syntax->list #'((from-transformer-args ...) ...)))])
+     (with-syntax
+       ([(tmps ...)
+         (generate-temporaries #'(from-transformer ...))]
+        [(to-empty to-insert to-collect)
+         (local-apply-transformer
+          (syntax-local-value #'to-transformer)
+          #'(to-transformer-args ...)
+          'expression)]
+        [((from-take from-drop from-empty? from-collection) ...)
+         (map (lambda (a b)
+                (local-apply-transformer
+                 (syntax-local-value a)
+                 b
+                 'expression))
+              (syntax->list #'(from-transformer ...))
+              (syntax->list #'((from-transformer-args ...) ...)))])
        #'(let loop ([acc to-empty]
                     [tmps from-collection] ...)
            (cond [(and (from-empty? tmps) ...)
