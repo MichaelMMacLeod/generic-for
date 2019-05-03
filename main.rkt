@@ -1,10 +1,6 @@
 #lang racket/base
 
-(require racket/match
-         (for-syntax racket/base
-                     syntax/apply-transformer
-                     syntax/parse)
-         "private/for.rkt"
+(require "private/for.rkt"
          "private/from-list.rkt"
          "private/to-list.rkt")
 
