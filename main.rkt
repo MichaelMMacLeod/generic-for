@@ -10,17 +10,23 @@
 (define-syntax (generic-for stx)
   (syntax-case stx ()
     [(_ (to-transformer to-transformer-args ...)
-        ([(pattern ...) (from-transformer from-collection)] ...)
+        ([(pattern ...) (from-transformer from-transformer-args ...)] ...)
         body ...)
      (with-syntax ([(tmps ...)
-                    (generate-temporaries #'(from-collection ...))]
+                    (generate-temporaries #'(from-transformer ...))]
                    [(to-empty to-insert to-collect)
                     (local-apply-transformer
                      (syntax-local-value #'to-transformer)
                      #'(to-transformer-args ...)
                      'expression)]
-                   [((from-take from-drop from-empty?) ...)
-                    (map syntax-local-value (syntax->list #'(from-transformer ...)))])
+                   [((from-take from-drop from-empty? from-collection) ...)
+                    (map (lambda (a b)
+                           (local-apply-transformer
+                            (syntax-local-value a)
+                            b
+                            'expression))
+                         (syntax->list #'(from-transformer ...))
+                         (syntax->list #'((from-transformer-args ...) ...)))])
        #'(let loop ([acc to-empty]
                     [tmps from-collection] ...)
            (cond [(and (from-empty? tmps) ...)
@@ -40,9 +46,14 @@
     [(#:reverse? #f)
      #'(null (lambda (acc x) (cons x acc)) reverse)]))
 
-(define-syntax from-list
-  #'(car cdr pair?))
+(define-syntax (from-list stx)
+  (syntax-parse stx
+    #:track-literals
+    [(#:reverse? #t collection)
+     #'(car cdr pair? (reverse collection))]
+    [(collection)
+     #'(car cdr pair? collection)]))
 
 (generic-for (to-list #:reverse? #f)
-             ([(i) (from-list '(1 2 3 4 5))])
+             ([(i) (from-list #:reverse? #t '(1 2 3 4 5))])
   (+ i 2))
