@@ -6,8 +6,10 @@
 
 (provide to-list)
 
-(define-to-transformer (to-list #:reverse? reverse?)
-  #:empty null
-  #:insert (λ (acc x)
-             (cons x acc))
-  #:collect (if reverse? values reverse))
+(define-to-transformer to-list
+  [((~optional (~seq #:reverse? reverse?)
+               #:defaults ([reverse? #'#f])))
+   #:empty null
+   #:insert (λ (acc x)
+              (cons x acc))
+   #:collect (if reverse? values reverse)])

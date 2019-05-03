@@ -8,12 +8,14 @@
 (define-syntax (define-to-transformer stx)
   (syntax-parse stx
     #:track-literals
-    [(_ (to-transformer:id arg ...)
-        #:empty empty
-        #:insert insert
-        #:collect collect)
+    [(_ to-transformer:id
+        [syntax-pattern #:empty empty
+                        #:insert insert
+                        #:collect collect]
+        ...)
      #'(define-syntax (to-transformer stx)
          (syntax-parse stx
            #:track-literals
-           [(arg ...)
-            #'(empty insert collect)]))]))
+           [syntax-pattern
+            #'(empty insert collect)]
+           ...))]))

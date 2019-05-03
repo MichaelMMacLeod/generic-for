@@ -6,8 +6,11 @@
 
 (provide from-list)
 
-(define-from-transformer (from-list #:reverse? reverse? collection)
-  #:take car
-  #:drop cdr
-  #:not-empty? pair?
-  #:collection (if reverse? (reverse collection) collection))
+(define-from-transformer from-list
+  [((~optional (~seq #:reverse? reverse?)
+               #:defaults ([reverse? #'#f]))
+    collection)
+   #:take car
+   #:drop cdr
+   #:not-empty? pair?
+   #:collection (if reverse? (reverse collection) collection)])
