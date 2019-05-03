@@ -1,6 +1,7 @@
 #lang scribble/manual
-@require[@for-label[generic-for
-                    racket/base]]
+
+@(require (for-label generic-for
+                     (except-in racket/base for)))
 
 @title{generic-for}
 @author{michael}
