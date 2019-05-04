@@ -62,12 +62,12 @@
 
 (define-syntax from-range
   (syntax-parser
-    [((var:id) end:expr)
+    [((var0:id var:id ...) end:expr)
      #'(()
-        (var 0)
-        (< var end)
-        (var var)
-        (add1 var))]))
+        ((var0 0) (var 0) ...)
+        ((< var0 end))
+        ()
+        ((add1 var0) (add1 var) ...))]))
 
 (define-syntax from-naturals
   (syntax-parser
@@ -143,10 +143,11 @@
         body ...)
      (with-syntax
        ([(((pre-bind ...)
-           bind
-           test
-           post-bind
-           step) ...)
+           (bind ...)
+           (test ...)
+           (post-bind ...)
+           (step ...))
+          ...)
          (map (lambda (i i-args)
                 (local-apply-transformer (syntax-local-value i)
                                          i-args
@@ -159,18 +160,22 @@
                                     #'(accumulator-args ...)
                                     'expression)])
          #`(let* (pre-bind ... ...)
-             (let loop (bind ... a-bind ...)
-               (cond [(and test ...)
+             (let loop (bind ... ... a-bind ...)
+               (cond [(and test ... ...)
                       (let-values ([(result ...)
-                                    (let (post-bind ...)
+                                    (let (post-bind ... ...)
                                       body ...)])
-                        (loop step ... a-insert ...))]
+                        (loop step ... ... a-insert ...))]
                      [else (values a-collect ...)])))))]))
 
 (require racket/list racket/set)
 
 
 (define size 10000000)
+
+(fast-generic-for (to-list)
+                  ([a b c (from-range 10)])
+                  (list a b c))
 
 (collect-garbage)
 (time (for/fold ([evens '()]
