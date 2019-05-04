@@ -1,6 +1,7 @@
 #lang racket/base
 
-(require "private/accumulator.rkt"
+(require racket/contract/base
+         "private/accumulator.rkt"
          "private/iterator.rkt"
          "private/for.rkt"
          "private/list.rkt"
@@ -14,7 +15,12 @@
                        "private/list.rkt"
                        "private/vector.rkt"
                        "private/stream.rkt"
-                       "private/void.rkt"))
+                       "private/void.rkt")
+         collection?
+         element?)
+
+(define collection? any/c)
+(define element? any/c)
 
 (module+ test
   (require racket/port
