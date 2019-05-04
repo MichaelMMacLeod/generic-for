@@ -87,4 +87,16 @@
                      ([x (from-range 10)])
                   x)
                 (void))
+
+  (check-equal? (for ([x (from-range 10)])
+                  x)
+                (for (to-void)
+                     ([x (from-range 10)])
+                  x))
+
+  (check-equal? (for to-void
+                     ([x (from-range 10)])
+                  x)
+                (for ([x (from-range 10)])
+                  x))
   )
