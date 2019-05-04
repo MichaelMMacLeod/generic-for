@@ -4,13 +4,15 @@
          "private/iterator.rkt"
          "private/for.rkt"
          "private/list.rkt"
-         "private/vector.rkt")
+         "private/vector.rkt"
+         "private/stream.rkt")
 
 (provide (all-from-out "private/accumulator.rkt"
                        "private/iterator.rkt"
                        "private/for.rkt"
                        "private/list.rkt"
-                       "private/vector.rkt"))
+                       "private/vector.rkt"
+                       "private/stream.rkt"))
 
 (module+ test
   (require rackunit)
@@ -57,4 +59,10 @@
   (check-equal? (for (to-vector #:grow-from 1)
                      ([i (from-list '(1 2 3 4 5))])
                   i)
-                #(1 2 3 4 5)))
+                #(1 2 3 4 5))
+
+  (check-equal? (for to-list
+                     ([i (from-stream (naturals))]
+                      [x (from-list '(a b c))])
+                  (cons i x))
+                '((0 . a) (1 . b) (2 . c))))
