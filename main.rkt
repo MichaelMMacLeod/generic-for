@@ -84,7 +84,7 @@
                 #(1 2 3 4 5))
 
   (check-equal? (for to-list
-                     ([i (from-stream (naturals))]
+                     ([i (from-stream (from-naturals))]
                       [x (from-list '(a b c))])
                   (cons i x))
                 '((0 . a) (1 . b) (2 . c)))
