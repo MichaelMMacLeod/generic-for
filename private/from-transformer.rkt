@@ -1,12 +1,13 @@
 #lang racket/base
 
-(require (for-syntax racket/base
-                     syntax/parse))
+(require racket/contract/base)
 
-(provide (for-syntax from-transformer))
+(provide (contract-out
+          #:forall (Collection Element)
+          (struct From-Transformer
+            ([take (-> Collection Element)]
+             [drop (-> Collection Collection)]
+             [not-empty? (-> Collection boolean?)]
+             [collection Collection]))))
 
-(define-for-syntax (from-transformer #:take take
-                                     #:drop drop
-                                     #:not-empty? not-empty?
-                                     #:collection collection)
-  #`(#,take #,drop #,not-empty? #,collection))
+(struct From-Transformer (take drop not-empty? collection))

@@ -1,11 +1,12 @@
 #lang racket/base
 
-(require (for-syntax racket/base
-                     syntax/parse))
+(require racket/contract/base)
 
-(provide (for-syntax to-transformer))
+(provide (contract-out
+          #:forall (Collection Element)
+          (struct To-Transformer
+            ([empty Collection]
+             [insert (-> Collection Element Collection)]
+             [collect (-> Collection Collection)]))))
 
-(define-for-syntax (to-transformer #:empty empty
-                                   #:insert insert
-                                   #:collect collect)
-  #`(#,empty #,insert #,collect))
+(struct To-Transformer (empty insert collect))

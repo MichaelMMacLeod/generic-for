@@ -1,18 +1,16 @@
 #lang racket/base
 
-(require (for-syntax racket/base
-                     syntax/parse)
+(require racket/contract/base
          "from-transformer.rkt")
 
-(provide from-list)
+(provide (contract-out
+          [from-list
+           (->* (list?)
+                (#:reverse? boolean?)
+                From-Transformer?)]))
 
-(define-syntax (from-list stx)
-  (syntax-parse stx
-    #:track-literals
-    [((~optional (~seq #:reverse? reverse?)
-                 #:defaults ([reverse? #'#f]))
-      collection)
-     (from-transformer #:take #'car
-                       #:drop #'cdr
-                       #:not-empty? #'pair?
-                       #:collection #'(if reverse? (reverse collection) collection))]))
+(define (from-list lst #:reverse? [reverse? #f])
+  (From-Transformer car
+                    cdr
+                    pair?
+                    (if reverse? (reverse lst) lst)))

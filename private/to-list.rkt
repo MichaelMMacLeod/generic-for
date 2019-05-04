@@ -1,17 +1,16 @@
 #lang racket/base
 
-(require (for-syntax racket/base
-                     syntax/parse)
+(require racket/contract/base
          "to-transformer.rkt")
 
-(provide to-list)
+(provide (contract-out
+          [to-list
+           (->* ()
+                (#:reverse? boolean?)
+                To-Transformer?)]))
 
-(define-syntax (to-list stx)
-  (syntax-parse stx
-    #:track-literals
-    [((~optional (~seq #:reverse? reverse?)
-                 #:defaults ([reverse? #'#f])))
-     (to-transformer #:empty #'null
-                     #:insert #'(λ (acc x)
-                                  (cons x acc))
-                     #:collect #'(if reverse? values reverse))]))
+(define (to-list #:reverse? [reverse? #f])
+  (To-Transformer null
+                  (λ (acc x)
+                    (cons x acc))
+                  (if reverse? values reverse)))
