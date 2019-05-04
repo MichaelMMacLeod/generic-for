@@ -14,20 +14,28 @@
     [(_ (~or accumulator:id accumulator:expr)
         ([pattern ... iterator] ...)
         body ...)
-     (with-syntax ([(tmps ...)
+     (with-syntax ([(collection ...)
                     (generate-temporaries #'(iterator ...))]
+                   [((taken-values ...) ...)
+                    (map generate-temporaries (syntax->list #'((pattern ...) ...)))]
+                   [(no-match-id ...)
+                    (generate-temporaries (syntax->list #'((pattern ...) ...)))]
                    [accumulator
                     (if (identifier? #'accumulator)
                         #'(accumulator)
                         #'accumulator)])
        #'(let loop ([acc (Accumulator-empty accumulator)]
-                    [tmps (Iterator-collection iterator)] ...)
-           (cond [(and ((Iterator-not-empty? iterator) tmps) ...)
-                  (match-define-values (pattern ...)
-                                       ((Iterator-take iterator) tmps)) ...
-                  (loop (call-with-values (lambda () body ...)
-                                          (lambda x
-                                            (apply (Accumulator-insert accumulator)
-                                                   acc x)))
-                        ((Iterator-drop iterator) tmps) ...)]
+                    [collection (Iterator-collection iterator)] ...)
+           (cond [(and ((Iterator-not-empty? iterator) collection) ...)
+                  (define-values (taken-values ...)
+                    ((Iterator-take iterator) collection))
+                  ...
+                  (match* (taken-values ... ...)
+                    [(pattern ... ...)
+                     (loop (call-with-values (lambda () body ...)
+                                             (lambda x
+                                               (apply (Accumulator-insert accumulator)
+                                                      acc x)))
+                           ((Iterator-drop iterator) collection) ...)]
+                    [(no-match-id ...) ((Accumulator-collect accumulator) acc)])]
                  [else ((Accumulator-collect accumulator) acc)])))]))
