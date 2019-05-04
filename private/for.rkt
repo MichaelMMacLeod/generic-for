@@ -113,9 +113,10 @@
 
 (define-syntax to-hash-set
   (syntax-parser
-    [(last-body:expr)
-     #'(([acc (hash)])
-        ((hash-set acc (first last-body) #t))
+    [()
+     #'((last-body)
+        ([acc (hash)])
+        ((hash-set acc last-body #t))
         (acc))]))
 
 (define-syntax to-fold
@@ -171,73 +172,90 @@
 (define-syntax from-hash
   (syntax-parser
     [((key:id value:id) table:expr)
-     #'(((hash-list (hash->list table)))
-        ((hash-list hash-list))
-        ((pair? hash-list))
-        ((key (caar hash-list)) (value (cdar hash-list)))
-        ((cdr hash-list)))]))
+     #'(([ht table])
+        ([i (hash-iterate-first ht)])
+        (i)
+        ([key (hash-iterate-key ht i)]
+         [value (hash-iterate-value ht i)])
+        ((hash-iterate-next ht i)))]))
 
 (require racket/list racket/set)
 
 
-(define size 10000000)
-
-(fast-generic-for (to-list)
-                  ([k v (from-hash #hash((k1 . v1) (k2 . v2) (k3 . v3)))])
-                  (cons k v))
-
-(fast-generic-for (to-list)
-                  ([a b c (from-range 10)])
-                  (list a b c))
-
-(collect-garbage)
-(time (for/fold ([evens '()]
-                 [odds '()])
-                ([x (in-range size)])
-        (cond [(even? x)
-               (values (cons x evens) odds)]
-              [else
-               (values evens (cons x odds))]))
-      #f)
-
-(collect-garbage)
-(time (fast-generic-for (to-fold [evens '()]
-                                 [odds '()])
-                        ([x (from-range size)])
-                        (cond [(even? x)
-                               (values (cons x evens) odds)]
-                              [else
-                               (values evens (cons x odds))]))
-      #f)
-
-#;(fast-generic-for (to-list)
-                  ([x (from-vector #(a b c d e f g h))]
-                   [i (from-naturals)])
-                  (cons i x))
-
-#;(fast-generic-for (to-hash-set)
-                  ([x (from-range 10)])
-                  (define y (* 2 x))
-                  y)
-
 ;(define size 10000000)
-;(define lst (make-list size 0))
+
+#;(for ([(k v) (in-hash #hash((woah . there) (how . are) (you . doin?)))])
+  (displayln (cons k v)))
+
+(define large-ht
+  (fast-generic-for (to-hash-set)
+                    ([x (from-range 1000000)])
+                    x))
+
+(collect-garbage)
+(time (for/list ([(k v) (in-hash large-ht)])
+        (cons k v))
+      #f)
+
+(collect-garbage)
+(time (fast-generic-for (to-list)
+                        ([k v (from-hash large-ht)])
+                        (cons k v))
+      #f)
+
+
+;(fast-generic-for (to-list)
+;                  ([a b c (from-range 10)])
+;                  (list a b c))
+;
 ;(collect-garbage)
-;(time (for/set ([x (in-list lst)])
-;        x)
-;      #f)
-;(collect-garbage)
-;(time (fast-generic-for (to-hash-set)
-;                        ([x (from-list lst)])
-;        x)
+;(time (for/fold ([evens '()]
+;                 [odds '()])
+;                ([x (in-range size)])
+;        (cond [(even? x)
+;               (values (cons x evens) odds)]
+;              [else
+;               (values evens (cons x odds))]))
 ;      #f)
 ;
-;(fast-generic-for (to-hash-set)
-;                  ([x (from-vector #(a b c d e f))])
-;                  x)
-;#;(let ([vect v] [len (vector-length v)])
-;  (let loop ([x 0])
-;    (cond [(< x len)
-;           (let ([x (vector-ref vect x)])
-;             (void))
-;           (loop (add1 x))])))
+;(collect-garbage)
+;(time (fast-generic-for (to-fold [evens '()]
+;                                 [odds '()])
+;                        ([x (from-range size)])
+;                        (cond [(even? x)
+;                               (values (cons x evens) odds)]
+;                              [else
+;                               (values evens (cons x odds))]))
+;      #f)
+;
+;#;(fast-generic-for (to-list)
+;                  ([x (from-vector #(a b c d e f g h))]
+;                   [i (from-naturals)])
+;                  (cons i x))
+;
+;#;(fast-generic-for (to-hash-set)
+;                  ([x (from-range 10)])
+;                  (define y (* 2 x))
+;                  y)
+;
+;;(define size 10000000)
+;;(define lst (make-list size 0))
+;;(collect-garbage)
+;;(time (for/set ([x (in-list lst)])
+;;        x)
+;;      #f)
+;;(collect-garbage)
+;;(time (fast-generic-for (to-hash-set)
+;;                        ([x (from-list lst)])
+;;        x)
+;;      #f)
+;;
+;;(fast-generic-for (to-hash-set)
+;;                  ([x (from-vector #(a b c d e f))])
+;;                  x)
+;;#;(let ([vect v] [len (vector-length v)])
+;;  (let loop ([x 0])
+;;    (cond [(< x len)
+;;           (let ([x (vector-ref vect x)])
+;;             (void))
+;;           (loop (add1 x))])))
