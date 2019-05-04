@@ -30,7 +30,7 @@
                                            i-args
                                            'expression))
                 (syntax->list #'(iterator ...))
-                (syntax->list #'(((var ...) iterator-args ...) ...)))])
+                (syntax->list #'((var ... iterator-args ...) ...)))])
          (with-syntax
            ([((result ...) (a-bind ...) (a-insert ...) a-collect)
              (local-apply-transformer (syntax-local-value #'accumulator)

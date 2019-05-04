@@ -9,7 +9,7 @@
 
 (define-syntax from-range
   (syntax-parser
-    [((var0:id var:id ...) end:expr)
+    [(var0:id var:id ... end:expr)
      #'(()
         ((var0 0) (var 0) ...)
         ((< var0 end))
@@ -18,7 +18,7 @@
 
 (define-syntax from-list
   (syntax-parser
-    [((var:id) lst:expr)
+    [(var:id lst:expr)
      #'(()
         ([var lst])
         ((pair? var))
@@ -27,7 +27,7 @@
 
 (define-syntax from-hash
   (syntax-parser
-    [((key:id value:id) table:expr)
+    [(key:id value:id table:expr)
      #'(([ht table])
         ([i (hash-iterate-first ht)])
         (i)
