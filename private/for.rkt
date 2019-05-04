@@ -62,12 +62,13 @@
 
 (define-syntax from-range
   (syntax-parser
-    [(var:id end:expr)
-     #'(()
+    [(var:id ... end:expr)
+     (with-syntax ([(var) #'(var ...)])
+     #`(()
         (var 0)
         (< var end)
         (var var)
-        (add1 var))]))
+        (add1 var)))]))
 
 (define-syntax from-naturals
   (syntax-parser
@@ -139,7 +140,7 @@
 (define-syntax (fast-generic-for stx)
   (syntax-parse stx
     [(_ (accumulator accumulator-args ...)
-        ([var:id (iterator iterator-args ...)] ...)
+        ([var:id ... (iterator iterator-args ...)] ...)
         body ...)
      (with-syntax
        ([(((pre-bind ...)
@@ -152,7 +153,7 @@
                                          i-args
                                          'expression))
               (syntax->list #'(iterator ...))
-              (syntax->list #`((var . (iterator-args ...)) ...)))])
+              (syntax->list #'((var ... iterator-args ...) ...)))])
        (with-syntax
          ([((result ...) (a-bind ...) (a-insert ...) (a-collect ...))
            (local-apply-transformer (syntax-local-value #'accumulator)
