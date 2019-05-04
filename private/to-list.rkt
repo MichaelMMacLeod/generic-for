@@ -1,16 +1,16 @@
 #lang racket/base
 
 (require racket/contract/base
-         "to-transformer.rkt")
+         "accumulator.rkt")
 
 (provide (contract-out
           [to-list
            (->* ()
                 (#:reverse? boolean?)
-                To-Transformer?)]))
+                Accumulator?)]))
 
 (define (to-list #:reverse? [reverse? #f])
-  (To-Transformer null
-                  (λ (acc x)
-                    (cons x acc))
-                  (if reverse? values reverse)))
+  (Accumulator null
+               (λ (acc x)
+                 (cons x acc))
+               (if reverse? values reverse)))

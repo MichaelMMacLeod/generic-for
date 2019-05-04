@@ -1,16 +1,16 @@
 #lang racket/base
 
 (require racket/contract/base
-         "from-transformer.rkt")
+         "iterator.rkt")
 
 (provide (contract-out
           [from-list
            (->* (list?)
                 (#:reverse? boolean?)
-                From-Transformer?)]))
+                Iterator?)]))
 
 (define (from-list lst #:reverse? [reverse? #f])
-  (From-Transformer car
-                    cdr
-                    pair?
-                    (if reverse? (reverse lst) lst)))
+  (Iterator car
+            cdr
+            pair?
+            (if reverse? (reverse lst) lst)))

@@ -4,26 +4,26 @@
          (for-syntax racket/base
                      syntax/parse))
 
-(require "from-transformer.rkt"
-         "to-transformer.rkt")
+(require "accumulator.rkt"
+         "iterator.rkt")
 
 (provide (rename-out [generic-for for]))
 
 (define-syntax (generic-for stx)
   (syntax-parse stx
-    [(_ to-transformer
-        ([(pattern ...) from-transformer] ...)
+    [(_ accumulator
+        ([(pattern ...) iterator] ...)
         body ...)
      (with-syntax ([(tmps ...)
-                    (generate-temporaries #'(from-transformer ...))])
-       #'(let loop ([acc (To-Transformer-empty to-transformer)]
-                    [tmps (From-Transformer-collection from-transformer)] ...)
-           (cond [(and ((From-Transformer-not-empty? from-transformer) tmps) ...)
+                    (generate-temporaries #'(iterator ...))])
+       #'(let loop ([acc (Accumulator-empty accumulator)]
+                    [tmps (Iterator-collection iterator)] ...)
+           (cond [(and ((Iterator-not-empty? iterator) tmps) ...)
                   (match-define-values (pattern ...)
-                                       ((From-Transformer-take from-transformer) tmps)) ...
+                                       ((Iterator-take iterator) tmps)) ...
                   (loop (call-with-values (lambda () body ...)
                                           (lambda x
-                                            (apply (To-Transformer-insert to-transformer)
+                                            (apply (Accumulator-insert accumulator)
                                                    acc x)))
-                        ((From-Transformer-drop from-transformer) tmps) ...)]
-                 [else ((To-Transformer-collect to-transformer) acc)])))]))
+                        ((Iterator-drop iterator) tmps) ...)]
+                 [else ((Accumulator-collect accumulator) acc)])))]))
