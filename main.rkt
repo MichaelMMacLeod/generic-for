@@ -63,7 +63,7 @@
       ([(evens odds)
         (for (to-fold [evens '()]
                       [odds '()])
-          ([x (from-range 9)])
+             ([x (from-range 9)])
           (if (even? x)
               (values (cons x evens) odds)
               (values evens (cons x odds))))])
@@ -76,7 +76,7 @@
                       [odds '()]
                       #:result (values (reverse evens)
                                        (reverse odds)))
-          ([x (from-range 9)])
+             ([x (from-range 9)])
           (if (even? x)
               (values (cons x evens) odds)
               (values evens (cons x odds))))])
