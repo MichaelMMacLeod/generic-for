@@ -5,17 +5,20 @@
          "private/for.rkt"
          "private/list.rkt"
          "private/vector.rkt"
-         "private/stream.rkt")
+         "private/stream.rkt"
+         "private/void.rkt")
 
 (provide (all-from-out "private/accumulator.rkt"
                        "private/iterator.rkt"
                        "private/for.rkt"
                        "private/list.rkt"
                        "private/vector.rkt"
-                       "private/stream.rkt"))
+                       "private/stream.rkt"
+                       "private/void.rkt"))
 
 (module+ test
-  (require rackunit)
+  (require racket/port
+           rackunit)
 
   (check-equal? (for to-list
                      ([x (from-list '(1 2 3 4 5))])
@@ -65,4 +68,17 @@
                      ([i (from-stream (naturals))]
                       [x (from-list '(a b c))])
                   (cons i x))
-                '((0 . a) (1 . b) (2 . c))))
+                '((0 . a) (1 . b) (2 . c)))
+
+  (check-equal? (for to-void
+                    ([i (from-list '(a b c))])
+                  i)
+                (void))
+
+  (check-equal? (with-output-to-string
+                  (λ ()
+                    (for (to-void #:proc write)
+                         ([i (from-list '(1 2 3))])
+                      (* 2 i))))
+                "246")
+  )
