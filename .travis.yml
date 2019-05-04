@@ -32,7 +32,7 @@ before_install:
 - export PATH="${RACKET_DIR}/bin:${PATH}" #install-racket.sh can't set for us
 
 install:
- - raco pkg install --auto --name generic-for
+ - raco pkg install --auto --name unified-for
 
 before_script:
 
@@ -40,9 +40,9 @@ before_script:
 # `raco pkg install --deps search-auto` to install any required
 # packages without it getting stuck on a confirmation prompt.
 script:
- - raco test -x -p generic-for
+ - raco test -x -p unified-for
 
 after_success:
- - raco setup --check-pkg-deps --pkgs generic-for
+ - raco setup --check-pkg-deps --pkgs unified-for
  - raco pkg install --auto cover cover-coveralls
  - raco cover -b -f coveralls -d $TRAVIS_BUILD_DIR/coverage .

@@ -1,11 +1,11 @@
 #lang scribble/manual
 
-@(require (for-label generic-for
+@(require (for-label unified-for
                      (except-in racket/base for)))
 
-@title{generic-for}
+@title{unified-for}
 @author{michael}
 
-@defmodule[generic-for]
+@defmodule[unified-for]
 
 Package Description Here
