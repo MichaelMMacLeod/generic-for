@@ -12,7 +12,7 @@
 (define-syntax (generic-for stx)
   (syntax-parse stx
     [(_ (~or accumulator:id accumulator:expr)
-        ([(pattern ...) iterator] ...)
+        ([pattern ... iterator] ...)
         body ...)
      (with-syntax ([(tmps ...)
                     (generate-temporaries #'(iterator ...))]
