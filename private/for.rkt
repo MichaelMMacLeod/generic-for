@@ -11,11 +11,15 @@
 
 (define-syntax (generic-for stx)
   (syntax-parse stx
-    [(_ accumulator
+    [(_ (~or accumulator:id accumulator:expr)
         ([(pattern ...) iterator] ...)
         body ...)
      (with-syntax ([(tmps ...)
-                    (generate-temporaries #'(iterator ...))])
+                    (generate-temporaries #'(iterator ...))]
+                   [accumulator
+                    (if (identifier? #'accumulator)
+                        #'(accumulator)
+                        #'accumulator)])
        #'(let loop ([acc (Accumulator-empty accumulator)]
                     [tmps (Iterator-collection iterator)] ...)
            (cond [(and ((Iterator-not-empty? iterator) tmps) ...)
