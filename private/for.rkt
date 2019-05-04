@@ -171,12 +171,21 @@
 
 
 (define size 10000000)
-(define vect (make-vector size 0))
+
+(collect-garbage)
+(time (for/fold ([evens '()]
+                 [odds '()])
+                ([x (in-range size)])
+        (cond [(even? x)
+               (values (cons x evens) odds)]
+              [else
+               (values evens (cons x odds))]))
+      #f)
 
 (collect-garbage)
 (time (fast-generic-for (to-fold [evens '()]
                                  [odds '()])
-                        ([x (from-vector vect)])
+                        ([x (from-range size)])
                         (cond [(even? x)
                                (values (cons x evens) odds)]
                               [else
