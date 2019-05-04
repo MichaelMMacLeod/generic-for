@@ -168,10 +168,23 @@
                         (loop step ... ... a-insert ...))]
                      [else (values a-collect ...)])))))]))
 
+(define-syntax from-hash
+  (syntax-parser
+    [((key:id value:id) table:expr)
+     #'(((hash-list (hash->list table)))
+        ((hash-list hash-list))
+        ((pair? hash-list))
+        ((key (caar hash-list)) (value (cdar hash-list)))
+        ((cdr hash-list)))]))
+
 (require racket/list racket/set)
 
 
 (define size 10000000)
+
+(fast-generic-for (to-list)
+                  ([k v (from-hash #hash((k1 . v1) (k2 . v2) (k3 . v3)))])
+                  (cons k v))
 
 (fast-generic-for (to-list)
                   ([a b c (from-range 10)])
