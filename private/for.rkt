@@ -114,23 +114,16 @@
 (define-syntax to-list
   (syntax-parser
     [(last-body:expr)
-     #'((acc null)
-        (cons last-body acc)
-        (reverse acc))]))
-
-(define-syntax unsafe-to-list
-  (syntax-parser
-    [(last-body:expr)
-     #'((acc null)
-        (unsafe-cons-list last-body acc)
-        (reverse acc))]))
+     #'(([acc null])
+        ((cons (first last-body) acc))
+        ((reverse acc)))]))
 
 (define-syntax to-hash-set
   (syntax-parser
     [(last-body:expr)
-     #'((acc (hash))
-        (hash-set acc last-body #t)
-        acc)]))
+     #'(([acc (hash)])
+        ((hash-set acc (first last-body) #t))
+        (acc))]))
 
 (define-syntax to-fold
   (syntax-parser
@@ -146,7 +139,7 @@
         ([var:id (iterator iterator-args ...)] ...)
         body ...)
      (with-syntax
-       ([((([pre-bind-var pre-bind-expr] ...)
+       ([(((pre-bind ...)
            bind
            test
            post-bind
@@ -163,7 +156,7 @@
            (local-apply-transformer (syntax-local-value #'accumulator)
                                     #'(result . (accumulator-args ...))
                                     'expression)])
-         #`(let* ([pre-bind-var pre-bind-expr] ... ...)
+         #`(let* (pre-bind ... ...)
              (let loop (bind ... a-bind ...)
                (cond [(and test ...)
                       (call-with-values
@@ -185,6 +178,16 @@
                         [else
                          (values evens
                                  (cons x odds))]))
+
+(fast-generic-for (to-list)
+                  ([x (from-vector #(a b c d e f g h))]
+                   [i (from-naturals)])
+                  (cons i x))
+
+(fast-generic-for (to-hash-set)
+                  ([x (from-range 10)])
+                  (define y (* 2 x))
+                  y)
 
 ;(define size 10000000)
 ;(define lst (make-list size 0))
