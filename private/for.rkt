@@ -111,13 +111,6 @@
         (var (unsafe-vector-ref v var))
         (unsafe-fx+ 1 var))]))
 
-(define-syntax to-list
-  (syntax-parser
-    [(last-body:expr)
-     #'(([acc null])
-        ((cons (first last-body) acc))
-        ((reverse acc)))]))
-
 (define-syntax to-hash-set
   (syntax-parser
     [(last-body:expr)
@@ -127,11 +120,21 @@
 
 (define-syntax to-fold
   (syntax-parser
-    [(last-body:expr [fold-var:id start:expr] ...)
-     #'(([fold-var start] ...)
-        ((first last-body)
-         (second last-body))
-        (fold-var ...))]))
+    [([fold-var:id start:expr] ...)
+     (with-syntax ([(last-body ...) (generate-temporaries #'((fold-var start) ...))])
+       #'((last-body ...)
+          ([fold-var start] ...)
+          (last-body ...)
+          (fold-var ...)))]))
+
+(define-syntax to-list
+  (syntax-parser
+    [()
+     (with-syntax ([(last-body) (generate-temporaries #'(tmp))])
+       #'((last-body)
+          ([acc null])
+          ((cons last-body acc))
+          ((reverse acc))))]))
 
 (define-syntax (fast-generic-for stx)
   (syntax-parse stx
@@ -151,40 +154,41 @@
               (syntax->list #'(iterator ...))
               (syntax->list #`((var . (iterator-args ...)) ...)))])
        (with-syntax
-         ([result #'result]
-          [((a-bind ...) (a-insert ...) (a-collect ...))
+         ([((result ...) (a-bind ...) (a-insert ...) (a-collect ...))
            (local-apply-transformer (syntax-local-value #'accumulator)
-                                    #'(result . (accumulator-args ...))
+                                    #'(accumulator-args ...)
                                     'expression)])
          #`(let* (pre-bind ... ...)
              (let loop (bind ... a-bind ...)
                (cond [(and test ...)
-                      (call-with-values
-                       (lambda ()
-                         (let (post-bind ...)
-                           body ...))
-                       (lambda result
-                         (loop step ... a-insert ...)))]
+                      (let-values ([(result ...)
+                                    (let (post-bind ...)
+                                      body ...)])
+                        (loop step ... a-insert ...))]
                      [else (values a-collect ...)])))))]))
 
 (require racket/list racket/set)
 
-(fast-generic-for (to-fold [evens '()]
-                           [odds '()])
-                  ([x (from-list '(1 2 3 4 5 6 7 8))])
-                  (cond [(even? x)
-                         (values (cons x evens)
-                                 odds)]
-                        [else
-                         (values evens
-                                 (cons x odds))]))
 
-(fast-generic-for (to-list)
+(define size 10000000)
+(define vect (make-vector size 0))
+
+(collect-garbage)
+(time (fast-generic-for (to-fold [evens '()]
+                                 [odds '()])
+                        ([x (from-vector vect)])
+                        (cond [(even? x)
+                               (values (cons x evens) odds)]
+                              [else
+                               (values evens (cons x odds))]))
+      #f)
+
+#;(fast-generic-for (to-list)
                   ([x (from-vector #(a b c d e f g h))]
                    [i (from-naturals)])
                   (cons i x))
 
-(fast-generic-for (to-hash-set)
+#;(fast-generic-for (to-hash-set)
                   ([x (from-range 10)])
                   (define y (* 2 x))
                   y)
