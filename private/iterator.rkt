@@ -18,12 +18,12 @@
 
 (define-syntax from-list
   (syntax-parser
-    [(var:id lst:expr)
+    [((var:id) lst:expr)
      #'(()
-        (var lst)
-        (pair? var)
-        (var (car var))
-        (cdr var))]))
+        ([var lst])
+        ((pair? var))
+        ([var (car var)])
+        ((cdr var)))]))
 
 (define-syntax from-hash
   (syntax-parser
