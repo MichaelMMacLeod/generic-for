@@ -8,17 +8,10 @@
 
 (provide (contract-out
           [from-stream
-           (-> stream? Iterator?)]
-          [from-naturals
-           (->* ()
-                (exact-nonnegative-integer?)
-                (stream/c exact-nonnegative-integer?))]))
+           (-> stream? Iterator?)]))
 
 (define (from-stream s)
   (Iterator stream-first
             stream-rest
             (not/c stream-empty?)
             s))
-
-(define (from-naturals [start 0])
-  (stream-cons start (from-naturals (add1 start))))
