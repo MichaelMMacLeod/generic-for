@@ -62,13 +62,12 @@
 
 (define-syntax from-range
   (syntax-parser
-    [(var:id ... end:expr)
-     (with-syntax ([(var) #'(var ...)])
-     #`(()
+    [((var:id) end:expr)
+     #'(()
         (var 0)
         (< var end)
         (var var)
-        (add1 var)))]))
+        (add1 var))]))
 
 (define-syntax from-naturals
   (syntax-parser
@@ -153,7 +152,7 @@
                                          i-args
                                          'expression))
               (syntax->list #'(iterator ...))
-              (syntax->list #'((var ... iterator-args ...) ...)))])
+              (syntax->list #'(((var ...) iterator-args ...) ...)))])
        (with-syntax
          ([((result ...) (a-bind ...) (a-insert ...) (a-collect ...))
            (local-apply-transformer (syntax-local-value #'accumulator)
