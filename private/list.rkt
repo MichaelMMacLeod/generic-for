@@ -6,19 +6,17 @@
 
 (provide (contract-out
           [from-list
-           (->* (list?)
-                (#:reverse? boolean?)
-                Iterator?)]
+           (-> list? Iterator?)]
           [to-list
            (->* ()
                 (#:reverse? boolean?)
                 Accumulator?)]))
 
-(define (from-list lst #:reverse? [reverse? #f])
+(define (from-list lst)
   (Iterator car
             cdr
             pair?
-            (if reverse? (reverse lst) lst)))
+            lst))
 
 (define (to-list #:reverse? [reverse? #f])
   (Accumulator null
