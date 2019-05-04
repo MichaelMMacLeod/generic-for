@@ -20,6 +20,19 @@
   (require racket/port
            rackunit)
 
+  (check-equal? (for ([x (from-list '(1 2 3 4 5))])
+                  x)
+                (for to-void
+                     ([x (from-list '(1 2 3 4 5))])
+                  x))
+
+  (check-equal? (for to-void
+                     ([x (from-list '(1 2 3 4 5))])
+                  x)
+                (for (to-void)
+                     ([x (from-list '(1 2 3 4 5))])
+                  x))
+
   (check-equal? (for to-list
                      ([x (from-list '(1 2 3 4 5))])
                   x)

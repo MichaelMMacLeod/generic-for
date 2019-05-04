@@ -5,13 +5,15 @@
                      syntax/parse))
 
 (require "accumulator.rkt"
-         "iterator.rkt")
+         "iterator.rkt"
+         "void.rkt")
 
 (provide (rename-out [generic-for for]))
 
 (define-syntax (generic-for stx)
   (syntax-parse stx
-    [(_ (~or accumulator:id accumulator:expr)
+    [(_ (~optional (~or accumulator:id accumulator:expr)
+                   #:defaults ([accumulator #'to-void]))
         ([pattern ... iterator] ...)
         body ...)
      (with-syntax ([(collection ...)
