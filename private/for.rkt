@@ -88,7 +88,7 @@
   (syntax-parser
     [(var:id lst:expr)
      #'(()
-        (var var)
+        (var lst)
         (pair? var)
         (var (car lst))
         (cdr var))]))
@@ -96,11 +96,41 @@
 (define-syntax from-vector
   (syntax-parser
     [(var:id vect:expr)
-     #'(((v vect) (len (vector-length vect)))
+     #'(((v vect) (len (vector-length v)))
         (var 0)
         (< var len)
         (var (vector-ref v var))
         (add1 var))]))
+
+(define-syntax unsafe-from-vector
+  (syntax-parser
+    [(var:id vect:expr)
+     #'(((v vect) (len (unsafe-vector-length vect)))
+        (var 0)
+        (unsafe-fx< var len)
+        (var (unsafe-vector-ref v var))
+        (unsafe-fx+ 1 var))]))
+
+(define-syntax to-list
+  (syntax-parser
+    [(last-body:expr)
+     #'((acc null)
+        (cons last-body acc)
+        (reverse acc))]))
+
+(define-syntax unsafe-to-list
+  (syntax-parser
+    [(last-body:expr)
+     #'((acc null)
+        (unsafe-cons-list last-body acc)
+        (reverse acc))]))
+
+(define-syntax to-hash-set
+  (syntax-parser
+    [(last-body:expr)
+     #'((acc (hash))
+        (hash-set acc last-body #t)
+        acc)]))
 
 (define-syntax (fast-generic-for stx)
   (syntax-parse stx
@@ -119,20 +149,39 @@
                                          'expression))
               (syntax->list #'(iterator ...))
               (syntax->list #`((var . (iterator-args ...)) ...)))])
-       #`(let ([pre-bind-var pre-bind-expr] ... ...)
-           (let loop (bind ...)
-             (cond [(and test ...)
-                    (let (post-bind ...)
-                      body ...)
-                    (loop step ...)]))))]))
+       (with-syntax
+         ([result #'result]
+          [(a-bind a-insert a-collect)
+           (local-apply-transformer (syntax-local-value #'accumulator)
+                                    #'(result . (accumulator-args ...))
+                                    'expression)])
+         #`(let* ([pre-bind-var pre-bind-expr] ... ...)
+             (let loop (bind ... a-bind)
+               (cond [(and test ...)
+                      (let ([result
+                             (let (post-bind ...)
+                               body ...)])
+                        (loop step ...
+                              a-insert))]
+                     [else a-collect])))))]))
+
+(require racket/list racket/set)
 
 (define size 10000000)
-(define v (make-vector size))
-(time (for ([x (in-vector v)]) (void)))
-(time (for ([x (in-vector v)]) (void)))
-(time (fast-generic-for (to-list)
-                        ([x (from-vector v)])
-                        (void)))
+(define lst (make-list size 0))
+(collect-garbage)
+(time (for/set ([x (in-list lst)])
+        x)
+      #f)
+(collect-garbage)
+(time (fast-generic-for (to-hash-set)
+                        ([x (from-list lst)])
+        x)
+      #f)
+
+(fast-generic-for (to-hash-set)
+                  ([x (from-vector #(a b c d e f))])
+                  x)
 #;(let ([vect v] [len (vector-length v)])
   (let loop ([x 0])
     (cond [(< x len)
