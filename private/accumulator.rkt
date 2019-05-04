@@ -1,12 +1,34 @@
 #lang racket/base
 
-(require racket/contract/base)
+(require (for-syntax racket/base
+                     syntax/parse))
 
-(provide (contract-out
-          #:forall (Collection Element)
-          (struct Accumulator
-            ([empty Collection]
-             [insert (-> Collection Element Collection)]
-             [collect (-> Collection Collection)]))))
+(provide to-fold
+         to-hash-set
+         to-list)
 
-(struct Accumulator (empty insert collect))
+(define-syntax to-hash-set
+  (syntax-parser
+    [()
+     #'((last-body)
+        ([acc (hash)])
+        ((hash-set acc last-body #t))
+        (acc))]))
+
+(define-syntax to-list
+  (syntax-parser
+    [()
+     (with-syntax ([(last-body) (generate-temporaries #'(tmp))])
+       #'((last-body)
+          ([acc null])
+          ((cons last-body acc))
+          ((reverse acc))))]))
+
+(define-syntax to-fold
+  (syntax-parser
+    [([fold-var:id start:expr] ...)
+     (with-syntax ([(last-body ...) (generate-temporaries #'((fold-var start) ...))])
+       #'((last-body ...)
+          ([fold-var start] ...)
+          (last-body ...)
+          (fold-var ...)))]))
