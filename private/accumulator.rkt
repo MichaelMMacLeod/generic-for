@@ -13,7 +13,7 @@
      #'((last-body)
         ([acc (hash)])
         ((hash-set acc last-body #t))
-        (acc))]))
+        acc)]))
 
 (define-syntax to-list
   (syntax-parser
@@ -22,13 +22,17 @@
        #'((last-body)
           ([acc null])
           ((cons last-body acc))
-          ((reverse acc))))]))
+          (reverse acc)))]))
 
 (define-syntax to-fold
   (syntax-parser
-    [([fold-var:id start:expr] ...)
+    #:track-literals
+    [([fold-var:id start:expr]
+      ...
+      (~optional (~seq #:result result:expr)
+                 #:defaults ([result #'(values fold-var ...)])))
      (with-syntax ([(last-body ...) (generate-temporaries #'((fold-var start) ...))])
        #'((last-body ...)
           ([fold-var start] ...)
           (last-body ...)
-          (fold-var ...)))]))
+          result))]))

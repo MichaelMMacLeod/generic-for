@@ -25,7 +25,7 @@
               (syntax->list #'(iterator ...))
               (syntax->list #'(((var ...) iterator-args ...) ...)))])
        (with-syntax
-         ([((result ...) (a-bind ...) (a-insert ...) (a-collect ...))
+         ([((result ...) (a-bind ...) (a-insert ...) a-collect)
            (local-apply-transformer (syntax-local-value #'accumulator)
                                     #'(accumulator-args ...)
                                     'expression)])
@@ -36,4 +36,4 @@
                                     (let (post-bind ... ...)
                                       body ...)])
                         (loop step ... ... a-insert ...))]
-                     [else (values a-collect ...)])))))]))
+                     [else a-collect])))))]))
