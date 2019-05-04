@@ -5,7 +5,8 @@
 
 (provide to-fold
          to-hash-set
-         to-list)
+         to-list
+         to-void)
 
 (define-syntax to-hash-set
   (syntax-parser
@@ -36,3 +37,11 @@
           ([fold-var start] ...)
           (last-body ...)
           result))]))
+
+(define-syntax to-void
+  (syntax-parser
+    [()
+     #'((_)
+        ()
+        ()
+        (values (void)))]))
