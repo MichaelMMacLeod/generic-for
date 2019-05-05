@@ -144,4 +144,14 @@
                 (for to-void
                   ([x (from-range 10)])
                   x))
+
+  (check-equal? (for to-list
+                  ([x (from-range 0 10 2)])
+                  x)
+                '(0 2 4 6 8))
+
+  (check-equal? (for to-list
+                  ([x (from-range 10 0 -2)])
+                  x)
+                '(10 8 6 4 2))
   )

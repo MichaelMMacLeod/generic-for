@@ -22,11 +22,17 @@
 (define-syntax (from-range stx)
   (syntax-parse stx
     [(_ end:expr)
+     #'(from-range 0 end)]
+    [(_ start:expr end:expr)
+     #'(from-range start end 1)]
+    [(_ start:expr end:expr step:expr)
      #'(()
-        ([n 0])
-        ((< n end))
+        ([n start])
+        ((if (< step 0)
+             (> n end)
+             (< n end)))
         (n)
-        ((add1 n)))]))
+        ((+ n step)))]))
 
 (define-syntax (from-list stx)
   (syntax-parse stx
