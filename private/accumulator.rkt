@@ -8,7 +8,8 @@
          to-list
          to-vector
          to-hash-set
-         to-fold)
+         to-fold
+         to-void)
 
 (define-syntax (to-list stx)
   (syntax-parse stx
@@ -76,10 +77,11 @@
           (last-body ...)
           result))]))
 
-#;(define-syntax to-void
-    (syntax-parser
-      [()
-       #'((_)
-          ()
-          ()
-          (values (void)))]))
+(define-syntax (to-void stx)
+  (syntax-parse stx
+    [(_)
+     #'(()
+        ()
+        (_)
+        ()
+        (void))]))

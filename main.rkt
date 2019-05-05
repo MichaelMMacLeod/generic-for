@@ -94,20 +94,8 @@
     (check-equal? evens '(0 2 4 6 8))
     (check-equal? odds '(1 3 5 7)))
 
-  #;(check-equal? (for (to-void)
-                    ([x (from-range 10)])
-                    x)
-                  (void))
-
-  #;(check-equal? (for ([x (from-range 10)])
-                    x)
-                  (for (to-void)
-                    ([x (from-range 10)])
-                    x))
-
-  #;(check-equal? (for to-void
-                    ([x (from-range 10)])
-                    x)
-                  (for ([x (from-range 10)])
-                    x))
+  (check-equal? (for (to-void)
+                  ([x (from-range 10)])
+                  x)
+                (void))
   )
