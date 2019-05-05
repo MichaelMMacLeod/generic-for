@@ -28,7 +28,7 @@
          (a-loop-arg ...)
          a-done-expr:expr)
         (syntax-parse iterator-results
-          [((([(i-outer-id:id ...) i-outer-expr] ...)
+          [((([(i-outer-id:id ...) i-outer-expr:expr] ...)
              ([i-loop-id:id i-loop-expr:expr] ...)
              (i-pos-guard:expr ...)
              (i-match-expr:expr ...)
