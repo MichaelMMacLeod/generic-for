@@ -43,29 +43,18 @@
                     ([pattern ... iterator] ...)
                     body ...)]
     [(_ accumulator:accumulator
-        ([id:id ...+ iterator:iterator] ...)
-        body ...+)
-     #'(let*-values ([(accumulator.outer-id ...) accumulator.outer-expr]
-                     ...
-                     [(iterator.outer-id ...) iterator.outer-expr]
-                     ... ...)
-         (let loop ([accumulator.loop-id accumulator.loop-expr]
-                    ...
-                    [iterator.loop-id iterator.loop-expr]
-                    ... ...)
-           (if (and iterator.pos-guard ... ...)
-               (let-values
-                   ([(accumulator.body-result ...)
-                     (let*-values
-                         ([(id ...) iterator.match-expr ...] ...)
-                       body ...)])
-                 (loop accumulator.loop-arg ...
-                       iterator.loop-arg ... ...))
-               accumulator.done-expr)))]
-    [(_ accumulator:accumulator
         ([pattern:expr ...+ iterator:iterator] ...)
         body ...+)
-     #'(let*-values ([(accumulator.outer-id ...) accumulator.outer-expr]
+     (with-syntax
+       ([match-body
+         (if (andmap identifier? (syntax->list #'(pattern ... ...)))
+             #'(let*-values
+                   ([(pattern ...) iterator.match-expr ...] ...)
+                 body ...)
+             #'(match-let*-values
+                   ([(pattern ...) iterator.match-expr ...] ...)
+                 body ...))])
+       #'(let*-values ([(accumulator.outer-id ...) accumulator.outer-expr]
                      ...
                      [(iterator.outer-id ...) iterator.outer-expr]
                      ... ...)
@@ -74,11 +63,6 @@
                     [iterator.loop-id iterator.loop-expr]
                     ... ...)
            (if (and iterator.pos-guard ... ...)
-               (let-values
-                   ([(accumulator.body-result ...)
-                     (match-let*-values
-                         ([(pattern ...) iterator.match-expr ...] ...)
-                       body ...)])
-                 (loop accumulator.loop-arg ...
-                       iterator.loop-arg ... ...))
-               accumulator.done-expr)))]))
+               (let-values ([(accumulator.body-result ...) match-body])
+                 (loop accumulator.loop-arg ... iterator.loop-arg ... ...))
+               accumulator.done-expr))))]))
