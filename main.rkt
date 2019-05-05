@@ -18,6 +18,23 @@
                   x)
                 '(1 2 3 4 5))
 
+  (check-equal? (for (to-list #:reverse? #f)
+                  ([x (from-list '(1 2 3 4 5))])
+                  x)
+                '(5 4 3 2 1))
+
+  (check-equal? (for (to-list #:reverse? #t)
+                  ([x (from-list '(1 2 3 4 5))])
+                  x)
+                '(1 2 3 4 5))
+
+  (check-equal? (for to-list
+                  ([x (from-list '(1 2 3 4 5))])
+                  x)
+                (for (to-list #:reverse? #t)
+                  ([x (from-list '(1 2 3 4 5))])
+                  x))
+
   (check-equal? (for (to-list)
                   ([x (from-list '())])
                   x)

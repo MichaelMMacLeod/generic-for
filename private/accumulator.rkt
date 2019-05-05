@@ -14,11 +14,13 @@
 (define-syntax (to-list stx)
   (syntax-parse stx
     [(_)
+     #'(to-list #:reverse? #t)]
+    [(_ #:reverse? reverse?:expr)
      #'(()
         ([acc '()])
         (body-result)
         ((cons body-result acc))
-        (reverse acc))]))
+        (if reverse? (reverse acc) acc))]))
 
 (define-syntax (to-vector stx)
   (syntax-parse stx
