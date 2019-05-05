@@ -70,29 +70,29 @@
                   (* 3 x))
                 (hash 0 #t 3 #t 6 #t))
 
-  #;(let-values
-        ([(evens odds)
-          (for (to-fold [evens '()]
-                        [odds '()])
-            ([x (from-range 9)])
-            (if (even? x)
-                (values (cons x evens) odds)
-                (values evens (cons x odds))))])
-      (check-equal? evens (reverse '(0 2 4 6 8)))
-      (check-equal? odds (reverse '(1 3 5 7))))
+  (let-values
+      ([(evens odds)
+        (for (to-fold [evens '()]
+                      [odds '()])
+          ([x (from-range 9)])
+          (if (even? x)
+              (values (cons x evens) odds)
+              (values evens (cons x odds))))])
+    (check-equal? evens (reverse '(0 2 4 6 8)))
+    (check-equal? odds (reverse '(1 3 5 7))))
 
-  #;(let-values
-        ([(evens odds)
-          (for (to-fold [evens '()]
-                        [odds '()]
-                        #:result (values (reverse evens)
-                                         (reverse odds)))
-            ([x (from-range 9)])
-            (if (even? x)
-                (values (cons x evens) odds)
-                (values evens (cons x odds))))])
-      (check-equal? evens '(0 2 4 6 8))
-      (check-equal? odds '(1 3 5 7)))
+  (let-values
+      ([(evens odds)
+        (for (to-fold [evens '()]
+                      [odds '()]
+                      #:result (values (reverse evens)
+                                       (reverse odds)))
+          ([x (from-range 9)])
+          (if (even? x)
+              (values (cons x evens) odds)
+              (values evens (cons x odds))))])
+    (check-equal? evens '(0 2 4 6 8))
+    (check-equal? odds '(1 3 5 7)))
 
   #;(check-equal? (for (to-void)
                     ([x (from-range 10)])

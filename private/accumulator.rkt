@@ -7,7 +7,8 @@
 (provide vector-copy
          to-list
          to-vector
-         to-hash-set)
+         to-hash-set
+         to-fold)
 
 (define-syntax (to-list stx)
   (syntax-parse stx
@@ -58,9 +59,22 @@
     [(_)
      #'(()
         ([table (hash)])
-        (last-body)
-        ((hash-set table last-body #t))
+        (body-result)
+        ((hash-set table body-result #t))
         table)]))
+
+(define-syntax (to-fold stx)
+  (syntax-parse stx
+    #:track-literals
+    [(_ [arg:id val:expr] ...)
+     #'(to-fold [arg val] ... #:result (values arg ...))]
+    [(_ [arg:id val:expr] ... #:result result:expr)
+     (with-syntax ([(last-body ...) (generate-temporaries #'([arg val] ...))])
+       #'(()
+          ([arg val] ...)
+          (last-body ...)
+          (last-body ...)
+          result))]))
 
 #;(define-syntax to-hash-set
     (syntax-parser
