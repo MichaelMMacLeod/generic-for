@@ -8,27 +8,33 @@
 
 (provide (rename-out [unified-for for]))
 
-(define-for-syntax (apply-transformer transformer args)
+#;(define-for-syntax (apply-transformer transformer args)
   (local-apply-transformer (syntax-local-value transformer) args 'expression))
 
 (define-syntax (unified-for stx)
   (syntax-parse stx
-    [(_ (accumulator:id accumulator-args ...)
-        ([pattern:expr ...+ (iterator:id iterator-args ...)] ...)
+    [(_ accumulator:expr
+        ([pattern:expr ...+ iterator:expr] ...)
         body ...+)
-     (define accumulator-result
+     (define expanded-accumulator
+       (local-expand #'accumulator 'expression #f))
+     (define expanded-iterators
+       (map (λ (iterator)
+              (local-expand iterator 'expression #f))
+            (syntax->list #'(iterator ...))))
+     #;(define accumulator-result
        (apply-transformer #'accumulator #'(accumulator-args ...)))
-     (define iterator-results
+     #;(define iterator-results
        (map apply-transformer
             (syntax->list #'(iterator ...))
             (syntax->list #'((iterator-args ...) ...))))
-     (syntax-parse accumulator-result
+     (syntax-parse expanded-accumulator
        [(([(a-outer-id:id ...) a-outer-expr:expr] ...)
          ([a-loop-id:id a-loop-expr:expr] ...)
          (a-body-result:id ...)
          (a-loop-arg ...)
          a-done-expr:expr)
-        (syntax-parse iterator-results
+        (syntax-parse expanded-iterators
           [((([(i-outer-id:id ...) i-outer-expr:expr] ...)
              ([i-loop-id:id i-loop-expr:expr] ...)
              (i-pos-guard:expr ...)

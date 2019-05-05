@@ -37,6 +37,23 @@
                   (0 1 2)
                   (0 2 4)))
 
+  (check-equal? (for (to-vector #:length 5 #:fill 0)
+                  ([x (from-list '(1 2 3 4 5))])
+                  x)
+                #(1 2 3 4 5))
+
+  (check-equal? (for (to-vector #:grow-from 1)
+                  ([x (from-list '(1 2 3))])
+                  x)
+                #(1 2 3))
+
+  (check-equal? (for (to-vector)
+                  ([x (from-list '(1 2 3))])
+                  x)
+                (for (to-vector #:grow-from 16 #:by 2)
+                  ([x (from-list '(1 2 3))])
+                  x))
+
   #;(check-equal? (for (to-list)
                     ([x y z (from-range 3)])
                     (list x y z))

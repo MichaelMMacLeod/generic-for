@@ -8,9 +8,9 @@
          from-list
          from-naturals)
 
-(define-syntax from-vector
-  (syntax-parser
-    [(v)
+(define-syntax (from-vector stx)
+  (syntax-parse stx
+    [(_ v:expr)
      #'(([(vect) v]
          [(len) (vector-length vect)])
         ([pos 0])
@@ -18,27 +18,27 @@
         ((vector-ref vect pos))
         ((add1 pos)))]))
 
-(define-syntax from-range
-  (syntax-parser
-    [(end:expr)
+(define-syntax (from-range stx)
+  (syntax-parse stx
+    [(_ end:expr)
      #'(()
         ([n 0])
         ((< n end))
         (n)
         ((add1 n)))]))
 
-(define-syntax from-list
-  (syntax-parser
-    [(l:expr)
+(define-syntax (from-list stx)
+  (syntax-parse stx
+    [(_ l:expr)
      #'(()
         ([lst l])
         ((pair? lst))
         ((car lst))
         ((cdr lst)))]))
 
-(define-syntax from-naturals
-  (syntax-parser
-    [(start:expr)
+(define-syntax (from-naturals stx)
+  (syntax-parse stx
+    [(_ start:expr)
      #'(()
         ([n start])
         ()
