@@ -42,6 +42,11 @@
                   x)
                 #(1 2 3 4 5))
 
+  (check-equal? (for (to-vector #:length 5 #:fill #f)
+                  ([x (from-list '())])
+                  x)
+                #(#f #f #f #f #f))
+
   (check-equal? (for (to-vector #:grow-from 1)
                   ([x (from-list '(1 2 3))])
                   x)
