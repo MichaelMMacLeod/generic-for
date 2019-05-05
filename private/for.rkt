@@ -23,7 +23,8 @@
             (syntax->list #'(iterator ...))
             (syntax->list #'((iterator-args ...) ...))))
      (syntax-parse accumulator-result
-       [(([a-loop-id:id a-loop-expr:expr] ...)
+       [(([(a-outer-id:id ...) a-outer-expr:expr] ...)
+         ([a-loop-id:id a-loop-expr:expr] ...)
          (a-body-result:id ...)
          (a-loop-arg ...)
          a-done-expr:expr)
@@ -34,7 +35,10 @@
              (i-match-expr:expr ...)
              (i-loop-arg ...))
             ...)
-           #'(let*-values ([(i-outer-id ...) i-outer-expr] ... ...)
+           #'(let*-values ([(a-outer-id ...) a-outer-expr]
+                           ...
+                           [(i-outer-id ...) i-outer-expr]
+                           ... ...)
                (let loop ([a-loop-id a-loop-expr]
                           ...
                           [i-loop-id i-loop-expr]
