@@ -6,7 +6,8 @@
 (provide from-vector
          from-range
          from-list
-         from-naturals)
+         from-naturals
+         from-hash)
 
 (define-syntax (from-vector stx)
   (syntax-parse stx
@@ -44,3 +45,13 @@
         ()
         (n)
         ((add1 n)))]))
+
+(define-syntax (from-hash stx)
+  (syntax-parse stx
+    [(_ table:expr)
+     #'(([(ht) table])
+        ([index (hash-iterate-first ht)])
+        (index)
+        ((values (hash-iterate-key ht index)
+                 (hash-iterate-value ht index)))
+        ((hash-iterate-next ht index)))]))

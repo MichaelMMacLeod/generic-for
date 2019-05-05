@@ -70,11 +70,11 @@
                     x*y)
                   '(0 1 4))
 
-  #;(check-true (set=?
-                 (for (to-list)
-                   ([k v (from-hash #hash((k1 . v1) (k2 . v2) (k3 . v3)))])
-                   (cons v k))
-                 '((v1 . k1) (v2 . k2) (v3 . k3))))
+  (check-true (set=?
+               (for (to-list)
+                 ([k v (from-hash #hash((k1 . v1) (k2 . v2) (k3 . v3)))])
+                 (cons v k))
+               '((v1 . k1) (v2 . k2) (v3 . k3))))
 
   #;(check-equal? (for (to-hash-set)
                     ([x (from-range 3)])
