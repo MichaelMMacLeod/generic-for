@@ -39,6 +39,8 @@
 
 (define-syntax (from-naturals stx)
   (syntax-parse stx
+    [(_)
+     #'(from-naturals 0)]
     [(_ start:expr)
      #'(()
         ([n start])
