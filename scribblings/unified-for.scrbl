@@ -20,12 +20,26 @@ constructs---@racket[for], @racket[for/list], @racket[for/vector],
 @deftech{unified for} macro that compiles directly to efficient
 @seclink["Named_let" #:doc '(lib "scribblings/guide/guide.scrbl")]{named let} code.
 
+@(define example-evaluator
+   (parameterize ([sandbox-output 'string]
+                  [sandbox-error-output 'string])
+     (make-evaluator 'racket/base
+                     #:requires '(unified-for
+                                  racket/format))))
+
 @defform/subs[(for maybe-accumulator (for-clause ...) body ...)
               [(maybe-accumulator (code:line)
                                   (accumulator accumulator-arg ...)
                                   accumulator)
-               (for-clause [var-id ... (iterator iterator-arg ...)])]]{
+               (for-clause [var-id ... (iterator iterator-arg ...)]
+                           (iterator var-id ... iterator-arg ...))]]{
 }
+
+@examples[#:eval example-evaluator
+          (for ([x (from-range 9)])
+            (display x))
+          (for ([(from-range x 9)])
+            (display x))]
 
 @section{Accumulators}
 
@@ -35,12 +49,11 @@ constructs---@racket[for], @racket[for/list], @racket[for/vector],
               #:contracts ([init-expr any/c])]{
 }
 
-@(define example-evaluator
-   (parameterize ([sandbox-output 'string]
-                  [sandbox-error-output 'string])
-     (make-evaluator 'racket/base
-                     #:requires '(unified-for
-                                  racket/format))))
+@(for to-list
+      ([k (? even? v) (from-hash #hash((k1 . 0) (k2 . 1) (k3 . 2)))]
+       [i (from-range 10)])
+   (define c (+ i v))
+   (format "~a: c" k c))
 
 @examples[#:eval example-evaluator
           (for (to-fold [sum 0] [rev-roots null])
@@ -56,14 +69,14 @@ constructs---@racket[for], @racket[for/list], @racket[for/vector],
 
 @section{Iterators}
 
-@defform[(from-list list-expr)]{
+@defform[(from-list arg-id list-expr)]{
 }
 
 @examples[#:eval example-evaluator
           (for ([x (from-list '(1 2 3 4 5))])
             (display x))]
 
-@defform[(from-range end-expr)]{
+@defform[(from-range arg-id ... end-expr)]{
 }
 
 @examples[#:eval example-evaluator
