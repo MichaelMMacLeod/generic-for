@@ -3,6 +3,7 @@
 (require (for-syntax racket/base
                      syntax/apply-transformer
                      syntax/parse)
+         racket/match
          "accumulator.rkt")
 
 (provide (rename-out [unified-for for]))
@@ -30,19 +31,18 @@
                                            i-args
                                            'expression))
                 (syntax->list #'(iterator ...))
-                (syntax->list #'((var ... iterator-args ...) ...)))])
-         (with-syntax
-           ([((result ...) (a-bind ...) (a-insert ...) a-collect)
-             (local-apply-transformer (syntax-local-value #'accumulator)
-                                      (if #'(accumulator-args ...)
-                                          #'(accumulator-args ...)
-                                          #'())
-                                      'expression)])
-           #`(let* (pre-bind ... ...)
-               (let loop (bind ... ... a-bind ...)
-                 (cond [(and test ... ...)
-                        (let-values ([(result ...)
-                                      (let (post-bind ... ...)
-                                        body ...)])
-                          (loop step ... ... a-insert ...))]
-                       [else a-collect]))))))]))
+                (syntax->list #'((var ... iterator-args ...) ...)))]
+          [((result ...) (a-bind ...) (a-insert ...) a-collect)
+           (local-apply-transformer (syntax-local-value #'accumulator)
+                                    (if #'(accumulator-args ...)
+                                        #'(accumulator-args ...)
+                                        #'())
+                                    'expression)])
+         #`(let* (pre-bind ... ...)
+             (let loop (bind ... ... a-bind ...)
+               (cond [(and test ... ...)
+                      (let-values ([(result ...)
+                                    (let (post-bind ... ...)
+                                      body ...)])
+                        (loop step ... ... a-insert ...))]
+                     [else a-collect])))))]))
