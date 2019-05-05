@@ -45,6 +45,8 @@
                   new-vect]))
          (add1 pos))
         (vector-copy vect 0 pos))]
+    [(_ #:length l:expr)
+     #'(to-vector #:length l #:fill 0)]
     [(_ #:length l:expr #:fill fill:expr)
      #'(([(len) l] [(vect) (make-vector len fill)])
         ([pos 0])

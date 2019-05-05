@@ -59,6 +59,11 @@
                   ([x (from-list '(1 2 3))])
                   x))
 
+  (check-equal? (for (to-vector #:length 5)
+                  ([x (from-range 3)])
+                  x)
+                #(0 1 2 0 0))
+
   (check-true (set=?
                (for (to-list)
                  ([k v (from-hash #hash((k1 . v1) (k2 . v2) (k3 . v3)))])
