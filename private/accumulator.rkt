@@ -6,7 +6,8 @@
 
 (provide vector-copy
          to-list
-         to-vector)
+         to-vector
+         to-hash-set)
 
 (define-syntax (to-list stx)
   (syntax-parse stx
@@ -51,6 +52,15 @@
              (vector-set! vect pos body-result))
            (add1 pos)))
         vect)]))
+
+(define-syntax (to-hash-set stx)
+  (syntax-parse stx
+    [(_)
+     #'(()
+        ([table (hash)])
+        (last-body)
+        ((hash-set table last-body #t))
+        table)]))
 
 #;(define-syntax to-hash-set
     (syntax-parser

@@ -59,27 +59,16 @@
                   ([x (from-list '(1 2 3))])
                   x))
 
-  #;(check-equal? (for (to-list)
-                    ([x y z (from-range 3)])
-                    (list x y z))
-                  '((0 0 0) (1 1 1) (2 2 2)))
-
-  #;(check-equal? (for (to-list)
-                    ([x y (from-range 3)])
-                    (define x*y (* x y))
-                    x*y)
-                  '(0 1 4))
-
   (check-true (set=?
                (for (to-list)
                  ([k v (from-hash #hash((k1 . v1) (k2 . v2) (k3 . v3)))])
                  (cons v k))
                '((v1 . k1) (v2 . k2) (v3 . k3))))
 
-  #;(check-equal? (for (to-hash-set)
-                    ([x (from-range 3)])
-                    x)
-                  (hash 0 #t 1 #t 2 #t))
+  (check-equal? (for (to-hash-set)
+                  ([x (from-range 3)])
+                  (* 3 x))
+                (hash 0 #t 3 #t 6 #t))
 
   #;(let-values
         ([(evens odds)
