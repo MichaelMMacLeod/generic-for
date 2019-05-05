@@ -8,9 +8,6 @@
 
 (provide (rename-out [unified-for for]))
 
-#;(define-for-syntax (apply-transformer transformer args)
-  (local-apply-transformer (syntax-local-value transformer) args 'expression))
-
 (define-syntax (unified-for stx)
   (syntax-parse stx
     [(_ accumulator:expr
@@ -22,12 +19,6 @@
        (map (λ (iterator)
               (local-expand iterator 'expression #f))
             (syntax->list #'(iterator ...))))
-     #;(define accumulator-result
-       (apply-transformer #'accumulator #'(accumulator-args ...)))
-     #;(define iterator-results
-       (map apply-transformer
-            (syntax->list #'(iterator ...))
-            (syntax->list #'((iterator-args ...) ...))))
      (syntax-parse expanded-accumulator
        [(([(a-outer-id:id ...) a-outer-expr:expr] ...)
          ([a-loop-id:id a-loop-expr:expr] ...)
