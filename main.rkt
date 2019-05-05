@@ -9,9 +9,17 @@
                        "private/iterator.rkt"
                        "private/for.rkt"))
 
+
+
 (module+ test
- (require racket/set
+  (require racket/set
            rackunit)
+
+  (check-equal? (for to-list
+                  ([x from-naturals]
+                   [y (from-list '(a b c d e))])
+                  (cons x y))
+                '((0 . a) (1 . b) (2 . c) (3 . d) (4 . e)))
 
   (check-equal? (for (to-list)
                   ([x (from-list '(1 2 3 4 5))])
@@ -53,6 +61,12 @@
                 '((0 0 0)
                   (0 1 2)
                   (0 2 4)))
+
+  (check-equal? (for to-list
+                  ([x from-naturals]
+                   [y (from-list '(1 2 3 4 5))])
+                  (cons x y))
+                '((0 . 1) (1 . 2) (2 . 3) (3 . 4) (4 . 5)))
 
   (check-equal? (for (to-vector #:length 5 #:fill 0)
                   ([x (from-list '(1 2 3 4 5))])
