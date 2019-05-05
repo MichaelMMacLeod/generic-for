@@ -17,17 +17,6 @@
         ((cons body-result acc))
         (reverse acc))]))
 
-(begin-for-syntax
-  (define-syntax-class nat>0
-    (pattern n:nat
-             #:fail-when (<= (syntax-e #'n) 0)
-             "expected a positive integer"))
-
-  (define-syntax-class nat>1
-    (pattern n:nat
-             #:fail-when (<= (syntax-e #'n) 1)
-             "expected an integer greater than 1")))
-
 (define-syntax (to-vector stx)
   (syntax-parse stx
     #:track-literals
