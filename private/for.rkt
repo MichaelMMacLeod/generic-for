@@ -43,9 +43,9 @@
                  (if (and i-pos-guard ... ...)
                      (let-values
                          ([(a-body-result ...)
-                           (match* (i-match-expr ... ...)
-                             [(pattern ... ...)
-                              body ...])])
+                           (match-let*-values
+                               ([(pattern ...) i-match-expr ...] ...)
+                             body ...)])
                        (loop a-loop-arg ...
                              i-loop-arg ... ...))
                      a-done-expr)))])])]))
