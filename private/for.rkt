@@ -11,7 +11,9 @@
   (syntax-parse stx
     [(_ (~optional (~or (accumulator accumulator-args ...) accumulator)
                    #:defaults ([accumulator #'to-void]))
-        ([var:id ... (iterator iterator-args ...)] ...)
+        ((~or* [var:id ...+ (iterator iterator-args ...)]
+               (iterator:id var:id ...+ iterator-args ...))
+         ...)
         body ...)
      (with-syntax
        ([(accumulator-args ...)
