@@ -48,26 +48,3 @@
                        (loop a-loop-arg ...
                              i-loop-arg ... ...))
                      a-done-expr)))])])]))
-
-(define-syntax from-vector
-  (syntax-parser
-    [(v)
-     #'(([(vect) v]
-         [(len) (vector-length vect)])
-        ([pos 0])
-        ((< pos len))
-        ((vector-ref vect pos))
-        ((add1 pos)))]))
-
-(define-syntax to-list
-  (syntax-parser
-    [()
-     #'(([acc '()])
-        (body-result)
-        ((cons body-result acc))
-        (reverse acc))]))
-
-(unified-for (to-list)
-             ([(cons a b) (from-vector #((1 . 2) (3 . 4) (5 . 6)))]
-              [x (from-vector #(1 2 3))])
-             (+ a b x))
