@@ -99,26 +99,4 @@
                   x)
                 (for ([x (from-range 10)])
                   x))
-
-  (check-equal? (for to-list
-                     ([x (from-range 10)])
-                  x)
-                (for to-list
-                     ((from-range x 10))
-                  x))
-;
-;  (check-equal? (for to-list
-;                     ([x (from-list '(1 2 3 4 5))])
-;                  x)
-;                (for to-list
-;                     ([(from-list x '(1 2 3 4 5))])
-;                  x))
-;
-;  (check-equal? (for to-list
-;                     ([k v (from-hash #hash((k1 . v1) (k2 . v2) (k3 . v3)))])
-;                  (cons k v))
-;                (for to-list
-;                     ([(from-hash k v #hash((k1 . v1) (k2 . v2) (k3 . v3)))])
-;                  (cons k v)))
-
   )
