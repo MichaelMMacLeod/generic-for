@@ -10,6 +10,16 @@
 
 (define-syntax (unified-for stx)
   (syntax-parse stx
+    [(_ ([pattern:expr ...+ iterator:expr] ...) body ...+)
+     #'(unified-for (to-void)
+                    ([pattern ... iterator] ...)
+                    body ...)]
+    [(_ accumulator:id
+        ([pattern:expr ...+ iterator:expr] ...)
+        body ...+)
+     #'(unified-for (accumulator)
+                    ([pattern ... iterator] ...)
+                    body ...)]
     [(_ accumulator:expr
         ([pattern:expr ...+ iterator:expr] ...)
         body ...+)
