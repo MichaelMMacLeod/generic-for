@@ -3,84 +3,128 @@
 @(require racket/contract/base
           racket/sandbox
           scribble/examples
-          (for-label unified-for
+          (for-label (except-in racket/base for)
                      racket/contract/base
                      racket/format
-                     (except-in racket/base for)))
+                     racket/list
+                     racket/match
+                     unified-for
+                     ))
 
-@title{Unified for Loops}
+@title{Unified @racket[for] Loops}
 
-@author{Michael MacLeod}
+@author[(author+email "Michael M. MacLeod" "mmmacleo@ucsd.edu"
+                      #:obfuscate? #t)]
 
 @defmodule[unified-for]
 
-This package consolidates the various flavors of @racket[for] iteration
-constructs---@racket[for], @racket[for/list], @racket[for/vector],
-@racket[for/fold], and so on---into a single
-@deftech{unified for} macro that compiles directly to efficient
-@seclink["Named_let" #:doc '(lib "scribblings/guide/guide.scrbl")]{named let} code.
+This package consolidates the various flavors of @racket[for]---@racket[for],
+@racket[for/list], @racket[for/vector], @racket[for/fold], and so on---into an
+extensible @racket[for] macro that compiles directly to efficient
+@seclink["Named_let" #:doc '(lib "scribblings/guide/guide.scrbl")]{named let} code,
+
+The unified @racket[for] gains its functionality through @secref{Iterators} and
+@secref{Accumulators}, which can be defined using TODO:define-iterator and
+TODO:define-accumulator respectively. It also allows identifiers to be bound with
+@seclink["match" #:doc '(lib "scribblings/reference/reference.scrbl")]{match} patterns.
 
 @(define example-evaluator
    (parameterize ([sandbox-output 'string]
                   [sandbox-error-output 'string])
      (make-evaluator 'racket/base
-                     #:requires '(unified-for
+                     #:requires '("../main.rkt"
+                                  racket/list
                                   racket/format))))
 
-@defform/subs[(for maybe-accumulator (for-clause ...) body ...)
+@defform/subs[(for maybe-accumulator (loop-clause ...) body ...+)
               [(maybe-accumulator (code:line)
-                                  (accumulator accumulator-arg ...)
-                                  accumulator)
-               (for-clause [var-id ... (iterator iterator-arg ...)]
-                           (iterator var-id ... iterator-arg ...))]]{
+                                  accumulator-id
+                                  (accumulator-id arg-form ...))
+               (loop-clause [maybe-match-patterns iterator-clause])
+               (maybe-match-patterns (code:line id ...)
+                                     (code:line match-pattern-expr ...))
+               (iterator-clause (code:line iterator-id)
+                                (iterator-id arg-form ...))
+               ]]{
+ Iteratively evaluates @racket[body]s.
 }
 
 @examples[#:eval example-evaluator
           (for ([x (from-range 9)])
             (display x))
-          (for ([(from-range x 9)])
-            (display x))]
-
-@section{Accumulators}
-
-@defform/subs[(to-fold [accum-id init-expr] ... maybe-result)
-              [(maybe-result (code:line)
-                             (#:result result-expr))]
-              #:contracts ([init-expr any/c])]{
-}
-
-@(for to-list
-      ([k (? even? v) (from-hash #hash((k1 . 0) (k2 . 1) (k3 . 2)))]
-       [i (from-range 10)])
-   (define c (+ i v))
-   (format "~a: c" k c))
-
-@examples[#:eval example-evaluator
-          (for (to-fold [sum 0] [rev-roots null])
-               ([i (from-list '(1 2 3 4))])
-            (values (+ sum i) (cons (sqrt i) rev-roots)))
-          (for (to-fold [acc null] [seen (hash)]
-                        #:result (reverse acc))
-               ([x (from-list '(0 1 1 2 3 4 4 4))])
-            (cond [(hash-ref seen x #f)
-                   (values acc seen)]
-                  [else (values (cons x acc)
-                                (hash-set seen x #t))]))]
+          (for (to-vector #:length 4)
+               ([(app real-part r) (from-vector #(1+2i 3+4i 5+6i 7+8i))])
+            (* r 2))
+          (let ([table #hash((a . 0) (b . 1) (c . 2) (d . 3) (e . 4))])
+            (for (to-fold [even-valued-keys empty])
+                 ([key value (from-hash table)])
+              (if (even? value)
+                  (cons key even-valued-keys)
+                  even-valued-keys)))]
 
 @section{Iterators}
 
-@defform[(from-list arg-id list-expr)]{
+@section{Accumulators}
+
+@defform/subs[(to-list maybe-reverse?)
+              [(maybe-reverse? (code:line)
+                               (code:line #:reverse? reverse?-expr))]
+              #:contracts ([reverse?-expr boolean?])]{
+ Accumulates single values into a list.
+
+ If @racket[#:reverse?] is not provided, or @racket[reverse?-expr] evaluates to
+ @racket[#t], @racket[to-list] accumulates items like @racket[for/list]. Otherwise,
+ @racket[to-list] returns items in the opposite order. This can be more
+ efficient than @racket[#:reverse? #f]---See @secref{Performance} for more information.
 }
 
 @examples[#:eval example-evaluator
-          (for ([x (from-list '(1 2 3 4 5))])
-            (display x))]
+          (for to-list
+               ([x (from-list '(1 2 3 4 5))])
+            (/ 1 x))
+          (for (to-list #:reverse? #f)
+               ([x (from-list '(1 2 3 4 5))])
+            (/ 1 x))]
 
-@defform[(from-range arg-id ... end-expr)]{
+@defform/subs[(to-vector length-option)
+              [(length-option (code:line)
+                              expandable-option
+                              fixed-option)
+               (expandable-option (code:line #:grow-from initial-capacity-expr)
+                                  (code:line #:grow-from initial-capacity-expr growth-option))
+               (fixed-option (code:line #:length length-expr)
+                             (code:line #:length length-expr #:fill fill-expr))
+               (growth-option (code:line #:by multiplier-expr)
+                              (code:line #:with growth-proc))]
+              #:contracts ([initial-capacity-expr exact-positive-integer?]
+                           [length-expr exact-nonnegative-integer?]
+                           [fill-expr any/c]
+                           [multiplier-expr (and/c exact-integer? (>=/c 2))]
+                           [growth-proc (->i ([old-size exact-positive-integer?])
+                                             [new-size (old-size)
+                                              (and/c exact-integer? (>/c old-size))])])]{
 }
 
-@examples[#:eval example-evaluator
-          (for ([x (from-range 3)])
-            (display x))
-          (for ([x y z (from-range 3)])
-            (display (~a x y z)))]
+@section{Performance}
+
+The performance of @racket[for] depends in part upon the
+choice of accumulator and iterators. All iterators and accumulators provided from
+this package perform on-par with their @racketmodname[racket] counterparts, with
+some including extra functionality, like @racket[to-list]'s @racket[#:reverse?],
+and @racket[to-vector]'s @racket[#:grow-from], which can result in improved
+performance.
+
+The @racket[for] syntax only expands into code that uses @racket[match] if
+non-identifier patterns are used. Otherwise, it is expanded directly into
+code that uses @racket[let-values]. This improves iteration speed by a
+small amount and reduces compiled bytecode sizes.
+
+Check out the TODO:unified-for/benchmarks package for measurements.
+
+@subsection{to-list}
+
+The @racket[to-list] accumulator collects items by @racket[cons]ing them together.
+Since this strategy produces a list in the opposite order of iteration,
+@racket[to-list] @racket[reverse]s the result by default.
+If @racket[#:reverse? #f] is provided, @racket[to-list] does not @racket[reverse] the
+result, which improves performance.
