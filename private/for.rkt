@@ -13,8 +13,8 @@
 
 (define-syntax (unified-for stx)
   (syntax-parse stx
-    [(_ (accumulator:id accumulator-args:expr ...)
-        ([pattern:expr ...+ (iterator:id iterator-args:expr ...)] ...)
+    [(_ (accumulator:id accumulator-args ...)
+        ([pattern:expr ...+ (iterator:id iterator-args ...)] ...)
         body ...+)
      (define accumulator-result
        (apply-transformer #'accumulator #'(accumulator-args ...)))

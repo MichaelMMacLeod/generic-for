@@ -4,15 +4,22 @@
                      syntax/parse))
 
 (provide to-list
-         )
+         #;to-vector)
 
 (define-syntax to-list
   (syntax-parser
     [()
-     #'(([acc '()])
+     #'(()
+        ([acc '()])
         (body-result)
         ((cons body-result acc))
         (reverse acc))]))
+
+#;(define-syntax to-vector
+  (syntax-parser
+    #:track-literals
+    [(#:length len)
+     #'(())]))
 
 #;(define-syntax to-hash-set
     (syntax-parser
