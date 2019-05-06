@@ -156,11 +156,6 @@
                   ([y (from-range 7)])
                   y)
                 'hello-world)
-  (check-exn exn:fail?
-             (λ ()
-               (for to-fold
-                 ([x (from-range 3)])
-                 x)))
   )
 
 (module+ test ; to-void
