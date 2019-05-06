@@ -33,7 +33,7 @@ The unified @racket[for] gains its functionality through @secref{Iterators} and
    (parameterize ([sandbox-output 'string]
                   [sandbox-error-output 'string])
      (make-evaluator 'racket/base
-                     #:requires '("../main.rkt"
+                     #:requires '(unified-for
                                   racket/list
                                   racket/format))))
 
