@@ -96,20 +96,21 @@
              #'(if (and accumulator-pre-guards ... iterator-pre-guards ...)
                    body-result-form
                    accumulator.done-expr))]
-        [pos-guard-form
-         (if (and (empty? (syntax->list #'(accumulator-pos-guards ...)))
-                  (empty? (syntax->list #'(iterator-pos-guards ...))))
+        [inner-form
+         (if (and (empty? (syntax->list #'(accumulator.inner-id ... ...)))
+                  (empty? (syntax->list #'(iterator.inner-id ... ... ...))))
+             #'pre-guard-form
              #'(let*-values ([(accumulator.inner-id ...) accumulator.inner-expr]
                              ...
                              [(iterator.inner-id ...) iterator.inner-expr]
                              ... ...)
-                 pre-guard-form)
+                 pre-guard-form))]
+        [pos-guard-form
+         (if (and (empty? (syntax->list #'(accumulator-pos-guards ...)))
+                  (empty? (syntax->list #'(iterator-pos-guards ...))))
+             #'inner-form
              #'(if (and accumulator-pos-guards ... iterator-pos-guards ...)
-                   (let*-values ([(accumulator.inner-id ...) accumulator.inner-expr]
-                                 ...
-                                 [(iterator.inner-id ...) iterator.inner-expr]
-                                 ... ...)
-                     pre-guard-form)
+                   inner-form
                    accumulator.done-expr))])
        #'(let*-values ([(accumulator.outer-id ...) accumulator.outer-expr]
                        ...
