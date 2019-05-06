@@ -24,6 +24,7 @@
                      ([(inner-id:id ...) inner-expr:expr] ...)
                      pre-guard:expr
                      (body-result:id ...)
+                     post-guard:expr
                      (loop-arg:expr ...)
                      done-expr:expr)
              (local-expand (if (identifier? #'unexpanded)
@@ -41,6 +42,7 @@
               ([(inner-id:id ...) inner-expr:expr] ...)
               pre-guard:expr
               (body-result:id ...)
+              post-guard:expr
               (loop-arg:expr ...)
               done-expr:expr))))
 
@@ -56,6 +58,7 @@
         ()
         #t
         (body-result)
+        #t
         ((cons body-result acc))
         (if reverse?.c (reverse acc) acc))]))
 
@@ -80,6 +83,7 @@
         ()
         #t
         (body-result)
+        #t
         ((let ([len (vector-length vect)])
            (cond [(< pos len)
                   (vector-set! vect pos body-result)
@@ -103,6 +107,7 @@
         ()
         #t
         (body-result)
+        #t
         ((begin
            (vector-set! vect pos body-result)
            (add1 pos)))
@@ -118,6 +123,7 @@
         ()
         #t
         (body-result)
+        #t
         ((hash-set table body-result #t))
         table)]))
 
@@ -135,6 +141,7 @@
           ()
           #t
           (last-body ...)
+          #t
           (last-body ...)
           result))]))
 
@@ -148,5 +155,6 @@
         ()
         #t
         (_)
+        #t
         ()
         (void))]))

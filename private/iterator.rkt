@@ -22,6 +22,7 @@
               ([(inner-id:id ...) inner-expr:expr] ...)
               pre-guard:expr
               match-expr:expr
+              post-guard:expr
               (loop-arg:expr ...))
              (local-expand (if (identifier? #'unexpanded)
                                (syntax/loc #'unexpanded
@@ -38,6 +39,7 @@
               ([(inner-id:id ...) inner-expr:expr] ...)
               pre-guard:expr
               match-expr:expr
+              post-guard:expr
               (loop-arg:expr ...)))))
 
 (define-syntax (from-vector stx)
@@ -50,6 +52,7 @@
         ()
         #t
         (vector-ref vect pos)
+        #t
         ((add1 pos)))]))
 
 (define-syntax (from-range stx)
@@ -70,6 +73,7 @@
         ()
         #t
         n
+        #t
         ((+ n step.c)))]))
 
 (define-syntax (from-list stx)
@@ -82,6 +86,7 @@
         ()
         #t
         (car lst)
+        #t
         ((cdr lst)))]))
 
 (define-syntax (from-naturals stx)
@@ -96,6 +101,7 @@
         ()
         #t
         n
+        #t
         ((add1 n)))]))
 
 (define-syntax (from-hash stx)
@@ -109,4 +115,5 @@
         #t
         (values (hash-iterate-key ht index)
                 (hash-iterate-value ht index))
+        #t
         ((hash-iterate-next ht index)))]))
