@@ -18,6 +18,7 @@
     (pattern unexpanded:expr
              #:with (([(outer-id:id ...) outer-expr:expr] ...)
                      ([loop-id:id loop-expr:expr] ...)
+                     (guard:expr ...)
                      (body-result:id ...)
                      (loop-arg:expr ...)
                      done-expr:expr)
@@ -30,6 +31,7 @@
   (define-syntax-class expanded-accumulator
     (pattern (([(outer-id:id ...) outer-expr:expr] ...)
               ([loop-id:id loop-expr:expr] ...)
+              (guard:expr ...)
               (body-result:id ...)
               (loop-arg:expr ...)
               done-expr:expr))))
@@ -41,6 +43,7 @@
     [(_ #:reverse? reverse?:expr)
      #'(()
         ([acc '()])
+        ()
         (body-result)
         ((cons body-result acc))
         (if reverse? (reverse acc) acc))]))
@@ -57,6 +60,7 @@
     [(_ #:grow-from initial-capacity:expr #:with growth-proc:expr)
      #'(()
         ([vect (make-vector initial-capacity)] [pos 0])
+        ()
         (body-result)
         ((let ([len (vector-length vect)])
            (cond [(< pos len)
@@ -75,6 +79,7 @@
     [(_ #:length l:expr #:fill fill:expr)
      #'(([(len) l] [(vect) (make-vector len fill)])
         ([pos 0])
+        ()
         (body-result)
         ((begin
            (when (< pos len)
@@ -87,6 +92,7 @@
     [(_)
      #'(()
         ([table (hash)])
+        ()
         (body-result)
         ((hash-set table body-result #t))
         table)]))
@@ -100,6 +106,7 @@
      (with-syntax ([(last-body ...) (generate-temporaries #'([arg val] ...))])
        #'(()
           ([arg val] ...)
+          ()
           (last-body ...)
           (last-body ...)
           result))]))
@@ -108,6 +115,7 @@
   (syntax-parse stx
     [(_)
      #'(()
+        ()
         ()
         (_)
         ()
