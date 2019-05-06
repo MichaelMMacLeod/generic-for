@@ -108,9 +108,9 @@
   (syntax-parse stx
     [(_)
      #'(from-naturals 0)]
-    [(_ start:expr)
+    [(_ (~var start (expr/c #'exact-nonnegative-integer?)))
      #'(()
-        ([n start])
+        ([n start.c])
         ()
         n
         ((add1 n)))]))
