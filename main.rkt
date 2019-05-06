@@ -12,7 +12,8 @@
 
 
 (module+ test
-  (require racket/set
+  (require racket/port
+           racket/set
            rackunit)
 
   (check-equal? (for to-list
@@ -35,6 +36,14 @@
                   ([x (from-list '(1 2 3 4 5))])
                   x)
                 '(1 2 3 4 5))
+
+  (check-equal? (with-output-to-string
+                  (λ ()
+                    (for (to-vector #:length 3)
+                      ([x (from-list '(1 2 3 4 5 6))])
+                      (display x)
+                      x)))
+                "123")
 
   (check-equal? (for to-list
                   ([x (from-list '(1 2 3 4 5))])

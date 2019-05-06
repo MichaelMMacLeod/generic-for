@@ -79,11 +79,10 @@
     [(_ #:length l:expr #:fill fill:expr)
      #'(([(len) l] [(vect) (make-vector len fill)])
         ([pos 0])
-        ()
+        ((< pos len))
         (body-result)
         ((begin
-           (when (< pos len)
-             (vector-set! vect pos body-result))
+           (vector-set! vect pos body-result)
            (add1 pos)))
         vect)]))
 
