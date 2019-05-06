@@ -81,6 +81,15 @@
              #'(loop accumulator.loop-arg ... iterator.loop-arg ... ...)
              #'(if (and accumulator-post-guards ... iterator-post-guards ...)
                    (loop accumulator.loop-arg ... iterator.loop-arg ... ...)
+                   accumulator.done-expr))]
+        [pre-guard-form
+         (if (and (empty? (syntax->list #'(accumulator-pre-guards ...)))
+                  (empty? (syntax->list #'(iterator-pre-guards ...))))
+             #'(let-values ([(accumulator.body-result ...) match-body])
+                 post-guard-form)
+             #'(if (and accumulator-pre-guards ... iterator-pre-guards ...)
+                   (let-values ([(accumulator.body-result ...) match-body])
+                     post-guard-form)
                    accumulator.done-expr))])
        #'(let*-values ([(accumulator.outer-id ...) accumulator.outer-expr]
                        ...
@@ -97,8 +106,5 @@
                                ...
                                [(iterator.inner-id ...) iterator.inner-expr]
                                ... ...)
-                   (if (and accumulator-pre-guards ... iterator-pre-guards ...)
-                       (let-values ([(accumulator.body-result ...) match-body])
-                         post-guard-form)
-                       accumulator.done-expr))
+                   pre-guard-form)
                  accumulator.done-expr))))]))
