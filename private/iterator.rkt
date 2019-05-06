@@ -3,21 +3,59 @@
 (require (for-syntax racket/base
                      syntax/parse))
 
-(provide from-vector
+(provide (for-syntax unexpanded-iterator
+                     expanded-iterator
+                     make-iterator)
+         from-vector
          from-range
          from-list
          from-naturals
          from-hash)
 
+(begin-for-syntax
+  (define-syntax-class unexpanded-iterator
+    (pattern unexpanded:expr
+             #:with
+             (([(outer-id:id ...) outer-expr:expr] ...)
+              ([loop-id:id loop-expr:expr] ...)
+              (pos-guard:expr ...)
+              match-expr:expr
+              (loop-arg:expr ...))
+             (local-expand (if (identifier? #'unexpanded)
+                               #'(unexpanded)
+                               #'unexpanded)
+                           'expression
+                           #f)))
+
+  (define-syntax-class expanded-iterator
+    (pattern (([(outer-id:id ...) outer-expr:expr] ...)
+              ([loop-id:id loop-expr:expr] ...)
+              (pos-guard:expr ...)
+              match-expr:expr
+              (loop-arg:expr ...))))
+
+  (define (make-iterator
+           #:let*-values outer-bindings
+           #:let-loop loop-bindings
+           #:only-if checks
+           #:bind match-expr
+           #:loop loop-args)
+    (syntax-parse (list outer-bindings loop-bindings checks match-expr loop-args)
+      [i:expanded-iterator #'i])))
+
 (define-syntax (from-vector stx)
   (syntax-parse stx
     [(_ v:expr)
-     #'(([(vect) v]
-         [(len) (vector-length vect)])
-        ([pos 0])
-        ((< pos len))
-        (vector-ref vect pos)
-        ((add1 pos)))]))
+     (make-iterator #:let*-values
+                    #'([(vect) v] [(len) (vector-length vect)])
+                    #:let-loop
+                    #'([pos 0])
+                    #:only-if
+                    #'((< pos len))
+                    #:bind
+                    #'(vector-ref vect pos)
+                    #:loop
+                    #'((add1 pos)))]))
 
 (define-syntax (from-range stx)
   (syntax-parse stx

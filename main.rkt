@@ -83,6 +83,11 @@
                   x)
                 #(1 2 3))
 
+  (check-equal? (for to-list
+                  ([x (from-vector #(0 1 2 3 4 5))])
+                  x)
+                '(0 1 2 3 4 5))
+
   (check-equal? (for (to-vector)
                   ([x (from-list '(1 2 3))])
                   x)

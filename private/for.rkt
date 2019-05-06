@@ -4,7 +4,8 @@
                      syntax/apply-transformer
                      syntax/parse)
          racket/match
-         "accumulator.rkt")
+         "accumulator.rkt"
+         "iterator.rkt")
 
 (provide (rename-out [unified-for for]))
 
@@ -20,30 +21,16 @@
                                #'(unexpanded)
                                #'unexpanded)
                            'expression
-                           #f)))
-
-  (define-syntax-class iterator
-    (pattern unexpanded:expr
-             #:with
-             (([(outer-id:id ...) outer-expr:expr] ...)
-              ([loop-id:id loop-expr:expr] ...)
-              (pos-guard:expr ...)
-              match-expr:expr
-              (loop-arg:expr ...))
-             (local-expand (if (identifier? #'unexpanded)
-                               #'(unexpanded)
-                               #'unexpanded)
-                           'expression
                            #f))))
 
 (define-syntax (unified-for stx)
   (syntax-parse stx
-    [(_ ([pattern:expr ...+ iterator:iterator] ...) body ...+)
+    [(_ ([pattern:expr ...+ iterator:unexpanded-iterator] ...) body ...+)
      #'(unified-for to-void
                     ([pattern ... iterator] ...)
                     body ...)]
     [(_ accumulator:accumulator
-        ([pattern:expr ...+ iterator:iterator] ...)
+        ([pattern:expr ...+ iterator:unexpanded-iterator] ...)
         body ...+)
      (with-syntax
        ([match-body
