@@ -1,6 +1,7 @@
 #lang racket/base
 
 (require (for-syntax racket/base
+                     racket/list
                      racket/syntax
                      syntax/apply-transformer
                      syntax/parse)
@@ -73,7 +74,14 @@
                  body ...)
              #'(match-let*-values
                    ([(pattern ...) iterator.match-expr] ...)
-                 body ...))])
+                 body ...))]
+        [post-guard-form
+         (if (and (empty? (syntax->list #'(accumulator-post-guards ...)))
+                  (empty? (syntax->list #'(iterator-post-guards ...))))
+             #'(loop accumulator.loop-arg ... iterator.loop-arg ... ...)
+             #'(if (and accumulator-post-guards ... iterator-post-guards ...)
+                   (loop accumulator.loop-arg ... iterator.loop-arg ... ...)
+                   accumulator.done-expr))])
        #'(let*-values ([(accumulator.outer-id ...) accumulator.outer-expr]
                        ...
                        [(iterator.outer-id ...) iterator.outer-expr]
@@ -91,8 +99,6 @@
                                ... ...)
                    (if (and accumulator-pre-guards ... iterator-pre-guards ...)
                        (let-values ([(accumulator.body-result ...) match-body])
-                         (if (and accumulator-post-guards ... iterator-post-guards ...)
-                             (loop accumulator.loop-arg ... iterator.loop-arg ... ...)
-                             accumulator.done-expr))
+                         post-guard-form)
                        accumulator.done-expr))
                  accumulator.done-expr))))]))
