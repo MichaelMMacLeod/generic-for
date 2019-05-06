@@ -22,6 +22,7 @@
                      ([loop-id:id loop-expr:expr] ...)
                      pos-guard:expr
                      ([(inner-id:id ...) inner-expr:expr] ...)
+                     pre-guard:expr
                      (body-result:id ...)
                      (loop-arg:expr ...)
                      done-expr:expr)
@@ -38,6 +39,7 @@
               ([loop-id:id loop-expr:expr] ...)
               pos-guard:expr
               ([(inner-id:id ...) inner-expr:expr] ...)
+              pre-guard:expr
               (body-result:id ...)
               (loop-arg:expr ...)
               done-expr:expr))))
@@ -52,6 +54,7 @@
         ([acc '()])
         #t
         ()
+        #t
         (body-result)
         ((cons body-result acc))
         (if reverse?.c (reverse acc) acc))]))
@@ -75,6 +78,7 @@
         ([vect (make-vector initial-capacity.c)] [pos 0])
         #t
         ()
+        #t
         (body-result)
         ((let ([len (vector-length vect)])
            (cond [(< pos len)
@@ -97,6 +101,7 @@
         ([pos 0])
         (< pos len)
         ()
+        #t
         (body-result)
         ((begin
            (vector-set! vect pos body-result)
@@ -111,6 +116,7 @@
         ([table (hash)])
         #t
         ()
+        #t
         (body-result)
         ((hash-set table body-result #t))
         table)]))
@@ -127,6 +133,7 @@
           ([arg val.c] ...)
           #t
           ()
+          #t
           (last-body ...)
           (last-body ...)
           result))]))
@@ -139,6 +146,7 @@
         ()
         #t
         ()
+        #t
         (_)
         ()
         (void))]))
