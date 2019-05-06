@@ -55,14 +55,14 @@
                    ([(pattern ...) iterator.match-expr ...] ...)
                  body ...))])
        #'(let*-values ([(accumulator.outer-id ...) accumulator.outer-expr]
-                     ...
-                     [(iterator.outer-id ...) iterator.outer-expr]
-                     ... ...)
-         (let loop ([accumulator.loop-id accumulator.loop-expr]
-                    ...
-                    [iterator.loop-id iterator.loop-expr]
-                    ... ...)
-           (if (and iterator.pos-guard ... ...)
-               (let-values ([(accumulator.body-result ...) match-body])
-                 (loop accumulator.loop-arg ... iterator.loop-arg ... ...))
-               accumulator.done-expr))))]))
+                       ...
+                       [(iterator.outer-id ...) iterator.outer-expr]
+                       ... ...)
+           (let loop ([accumulator.loop-id accumulator.loop-expr]
+                      ...
+                      [iterator.loop-id iterator.loop-expr]
+                      ... ...)
+             (if (and iterator.pos-guard ... ...)
+                 (let-values ([(accumulator.body-result ...) match-body])
+                   (loop accumulator.loop-arg ... iterator.loop-arg ... ...))
+                 accumulator.done-expr))))]))
