@@ -39,7 +39,7 @@
                       ...
                       [iterator.loop-id iterator.loop-expr]
                       ... ...)
-             (if (and accumulator.guard iterator.guard ...)
+             (if (and accumulator.pos-guard iterator.pos-guard ...)
                  (let*-values ([(accumulator.inner-id ...) accumulator.inner-expr]
                                ...
                                [(iterator.inner-id ...) iterator.inner-expr]

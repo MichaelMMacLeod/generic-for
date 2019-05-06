@@ -18,7 +18,7 @@
              (([(outer-id:id ...) outer-expr:expr] ...)
               outer-check:expr
               ([loop-id:id loop-expr:expr] ...)
-              guard:expr
+              pos-guard:expr
               ([(inner-id:id ...) inner-expr:expr] ...)
               match-expr:expr
               (loop-arg:expr ...))
@@ -33,7 +33,7 @@
     (pattern (([(outer-id:id ...) outer-expr:expr] ...)
               outer-check:expr
               ([loop-id:id loop-expr:expr] ...)
-              guard:expr
+              pos-guard:expr
               ([(inner-id:id ...) inner-expr:expr] ...)
               match-expr:expr
               (loop-arg:expr ...)))))
