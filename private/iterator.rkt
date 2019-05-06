@@ -34,7 +34,8 @@
               match-expr:expr
               (loop-arg:expr ...))
              (local-expand (if (identifier? #'unexpanded)
-                               #'(unexpanded)
+                               (syntax/loc #'unexpanded
+                                 (unexpanded))
                                #'unexpanded)
                            'expression
                            #f)))
