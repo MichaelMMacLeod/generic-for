@@ -4,7 +4,8 @@
                      syntax/parse)
          racket/vector)
 
-(provide (for-syntax accumulator)
+(provide (for-syntax accumulator
+                     expanded-accumulator)
          vector-copy
          to-list
          to-vector
@@ -24,7 +25,14 @@
                                #'(unexpanded)
                                #'unexpanded)
                            'expression
-                           #f))))
+                           #f)))
+
+  (define-syntax-class expanded-accumulator
+    (pattern (([(outer-id:id ...) outer-expr:expr] ...)
+              ([loop-id:id loop-expr:expr] ...)
+              (body-result:id ...)
+              (loop-arg:expr ...)
+              done-expr:expr))))
 
 (define-syntax (to-list stx)
   (syntax-parse stx
