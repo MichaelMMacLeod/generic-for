@@ -97,9 +97,9 @@
 
 (define-syntax (from-list stx)
   (syntax-parse stx
-    [(_ l:expr)
+    [(_ (~var l (expr/c #'list?)))
      #'(()
-        ([lst l])
+        ([lst l.c])
         ((pair? lst))
         (car lst)
         ((cdr lst)))]))
