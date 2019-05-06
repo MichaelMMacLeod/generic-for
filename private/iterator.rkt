@@ -16,6 +16,7 @@
     (pattern unexpanded:expr
              #:with
              (([(outer-id:id ...) outer-expr:expr] ...)
+              outer-check:expr
               ([loop-id:id loop-expr:expr] ...)
               guard:expr
               match-expr:expr
@@ -29,6 +30,7 @@
 
   (define-syntax-class expanded-iterator
     (pattern (([(outer-id:id ...) outer-expr:expr] ...)
+              outer-check:expr
               ([loop-id:id loop-expr:expr] ...)
               guard:expr
               match-expr:expr
@@ -38,6 +40,7 @@
   (syntax-parse stx
     [(_ (~var v (expr/c #'vector?)))
      #'(([(vect) v.c] [(len) (vector-length vect)])
+        #t
         ([pos 0])
         (< pos len)
         (vector-ref vect pos)
@@ -53,6 +56,7 @@
         (~var end (expr/c #'real?))
         (~var step (expr/c #'real?)))
      #'(()
+        #t
         ([n start.c])
         (if (< step.c 0)
             (> n end.c)
@@ -64,6 +68,7 @@
   (syntax-parse stx
     [(_ (~var l (expr/c #'list?)))
      #'(()
+        #t
         ([lst l.c])
         (pair? lst)
         (car lst)
@@ -75,6 +80,7 @@
      #'(from-naturals 0)]
     [(_ (~var start (expr/c #'exact-nonnegative-integer?)))
      #'(()
+        #t
         ([n start.c])
         ()
         n
@@ -84,6 +90,7 @@
   (syntax-parse stx
     [(_ (~var table (expr/c #'hash?)))
      #'(([(ht) table.c])
+        #t
         ([index (hash-iterate-first ht)])
         index
         (values (hash-iterate-key ht index)

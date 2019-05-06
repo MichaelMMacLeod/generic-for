@@ -23,10 +23,7 @@ This package consolidates the various
          #:doc '(lib "scribblings/reference/reference.scrbl")] into a
 single @racket[for] macro that compiles directly to efficient
 @seclink["Named_let" #:doc '(lib "scribblings/guide/guide.scrbl")]{named let}
-code.
-
-The unified @racket[for] gains its functionality through @secref{Iterators} and
-@secref{Accumulators}. It also allows identifiers to be bound with
+code. It also allows identifiers to be bound with
 @seclink["match" #:doc '(lib "scribblings/reference/reference.scrbl")]{match} patterns.
 
 @(define example-evaluator
@@ -41,9 +38,7 @@ The unified @racket[for] gains its functionality through @secref{Iterators} and
               [(maybe-accumulator (code:line)
                                   accumulator-id
                                   (accumulator-id arg-form ...))
-               (loop-clause [maybe-match-patterns iterator-clause])
-               (maybe-match-patterns (code:line id ...)
-                                     (code:line match-pattern-expr ...))
+               (loop-clause [match-pattern ... iterator-clause])
                (iterator-clause (code:line iterator-id)
                                 (iterator-id arg-form ...))
                ]]{
@@ -53,8 +48,9 @@ The unified @racket[for] gains its functionality through @secref{Iterators} and
 @section{Iterators}
 
 An @deftech{iterator} is a
-@seclink["stxtrans" #:doc '(lib "scribblings/reference/reference.scrbl")]{syntax transformer}
-for use in the @racket[_iterator-clause] of @racket[for].
+@seclink["stxtrans" #:doc '(lib "scribblings/reference/reference.scrbl")]{Syntax Transformer}
+for use in the @racket[_iterator-clause] of @racket[for]. See
+@seclink["defining-new-iterators"]{Defining New Iterators}.
 
 @defform[(from-list lst)
          #:contracts ([lst list?])]{
@@ -118,6 +114,8 @@ for use in the @racket[_iterator-clause] of @racket[for].
            (for ([key value (from-hash #hash((a . 1) (b . 2) (c . 3)))])
              (display (cons key value)))]
 }
+
+@subsection[#:tag "defining-new-iterators"]{Defining New Iterators}
 
 @section{Accumulators}
 
