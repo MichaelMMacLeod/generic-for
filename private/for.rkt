@@ -28,7 +28,7 @@
              (([(outer-id:id ...) outer-expr:expr] ...)
               ([loop-id:id loop-expr:expr] ...)
               (pos-guard:expr ...)
-              (match-expr:expr ...)
+              match-expr:expr
               (loop-arg:expr ...))
              (local-expand (if (identifier? #'unexpanded)
                                #'(unexpanded)
@@ -49,10 +49,10 @@
        ([match-body
          (if (andmap identifier? (syntax->list #'(pattern ... ...)))
              #'(let*-values
-                   ([(pattern ...) iterator.match-expr ...] ...)
+                   ([(pattern ...) iterator.match-expr] ...)
                  body ...)
              #'(match-let*-values
-                   ([(pattern ...) iterator.match-expr ...] ...)
+                   ([(pattern ...) iterator.match-expr] ...)
                  body ...))])
        #'(let*-values ([(accumulator.outer-id ...) accumulator.outer-expr]
                        ...

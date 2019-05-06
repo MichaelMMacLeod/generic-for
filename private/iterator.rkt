@@ -16,7 +16,7 @@
          [(len) (vector-length vect)])
         ([pos 0])
         ((< pos len))
-        ((vector-ref vect pos))
+        (vector-ref vect pos)
         ((add1 pos)))]))
 
 (define-syntax (from-range stx)
@@ -31,7 +31,7 @@
         ((if (< step 0)
              (> n end)
              (< n end)))
-        (n)
+        n
         ((+ n step)))]))
 
 (define-syntax (from-list stx)
@@ -40,7 +40,7 @@
      #'(()
         ([lst l])
         ((pair? lst))
-        ((car lst))
+        (car lst)
         ((cdr lst)))]))
 
 (define-syntax (from-naturals stx)
@@ -51,7 +51,7 @@
      #'(()
         ([n start])
         ()
-        (n)
+        n
         ((add1 n)))]))
 
 (define-syntax (from-hash stx)
@@ -60,6 +60,6 @@
      #'(([(ht) table])
         ([index (hash-iterate-first ht)])
         (index)
-        ((values (hash-iterate-key ht index)
-                 (hash-iterate-value ht index)))
+        (values (hash-iterate-key ht index)
+                (hash-iterate-value ht index))
         ((hash-iterate-next ht index)))]))
