@@ -30,7 +30,9 @@
                     ([pattern ... iterator] ...)
                     body ...)]
     [(_ accumulator:accumulator
-        ([pattern:expr ...+ iterator:unexpanded-iterator] ...)
+        ([(~describe "match pattern" pattern:expr)
+          ...+
+          (~describe "iterator" iterator:unexpanded-iterator)] ...)
         body ...+)
      (with-syntax
        ([match-body
