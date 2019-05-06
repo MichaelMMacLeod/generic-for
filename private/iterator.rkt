@@ -60,9 +60,9 @@
 
 (define-syntax (from-vector stx)
   (syntax-parse stx
-    [(_ v:expr)
+    [(_ (~var v (expr/c #'vector?)))
      (make-iterator #:let*-values
-                    (list #'[(vect) v]
+                    (list #'[(vect) v.c]
                           #'[(len) (vector-length vect)])
                     #:loop-bindings
                     (list #'[pos 0])
