@@ -79,13 +79,18 @@
     [(_ start:expr end:expr)
      #'(from-range start end 1)]
     [(_ start:expr end:expr step:expr)
-     #'(()
-        ([n start])
-        ((if (< step 0)
-             (> n end)
-             (< n end)))
-        n
-        ((+ n step)))]))
+     (make-iterator #:let*-values
+                    '()
+                    #:loop-bindings
+                    (list #'[n start])
+                    #:checks
+                    (list #'(if (< step 0)
+                                (> n end)
+                                (< n end)))
+                    #:match-expr
+                    #'n
+                    #:loop-args
+                    (list #'(+ n step)))]))
 
 (define-syntax (from-list stx)
   (syntax-parse stx
