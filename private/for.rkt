@@ -39,7 +39,18 @@
                       useful-checks
                       (cons check useful-checks)))
                 '()
-                (syntax->list #'(iterator.outer-check ...)))])
+                (syntax->list #'(iterator.outer-check ...)))]
+        [(accumulator-pos-guards ...)
+         (if (equal? #t (syntax-e #'accumulator.pos-guard))
+             #'()
+             #'(accumulator.pos-guard))]
+        [(iterator-pos-guards ...)
+         (foldl (λ (check useful-checks)
+                  (if (equal? #t (syntax-e check))
+                      useful-checks
+                      (cons check useful-checks)))
+                '()
+                (syntax->list #'(iterator.pos-guard ...)))])
        #'(let*-values ([(accumulator.outer-id ...) accumulator.outer-expr]
                        ...
                        [(iterator.outer-id ...) iterator.outer-expr]
@@ -50,7 +61,7 @@
                       ...
                       [iterator.loop-id iterator.loop-expr]
                       ... ...)
-             (if (and accumulator.pos-guard iterator.pos-guard ...)
+             (if (and accumulator-pos-guards ... iterator-pos-guards ...)
                  (let*-values ([(accumulator.inner-id ...) accumulator.inner-expr]
                                ...
                                [(iterator.inner-id ...) iterator.inner-expr]
