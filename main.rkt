@@ -22,6 +22,12 @@
                   (cons x y))
                 '((0 . a) (1 . b) (2 . c) (3 . d) (4 . e)))
 
+  (check-exn exn:fail?
+             (λ ()
+               (for (to-fold [x (values 'too 'many)])
+                 ([y (from-range 10)])
+                 x)))
+
   (check-equal? (for (to-list)
                   ([x (from-list '(1 2 3 4 5))])
                   x)

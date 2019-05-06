@@ -108,10 +108,10 @@
     #:track-literals
     [(_ [arg:id val:expr] ...)
      #'(to-fold [arg val] ... #:result (values arg ...))]
-    [(_ [arg:id val:expr] ... #:result result:expr)
+    [(_ [arg:id (~var val (expr/c #'any/c))] ... #:result result:expr)
      (with-syntax ([(last-body ...) (generate-temporaries #'([arg val] ...))])
        #'(()
-          ([arg val] ...)
+          ([arg val.c] ...)
           ()
           (last-body ...)
           (last-body ...)
