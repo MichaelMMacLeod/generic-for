@@ -75,23 +75,25 @@
 
 (define-syntax (from-range stx)
   (syntax-parse stx
-    [(_ end:expr)
+    [(_ end)
      #'(from-range 0 end)]
-    [(_ start:expr end:expr)
+    [(_ start end)
      #'(from-range start end 1)]
-    [(_ start:expr end:expr step:expr)
+    [(_ (~var start (expr/c #'real?))
+        (~var end (expr/c #'real?))
+        (~var step (expr/c #'real?)))
      (make-iterator #:let*-values
                     '()
                     #:loop-bindings
-                    (list #'[n start])
+                    (list #'[n start.c])
                     #:checks
-                    (list #'(if (< step 0)
-                                (> n end)
-                                (< n end)))
+                    (list #'(if (< step.c 0)
+                                (> n end.c)
+                                (< n end.c)))
                     #:match-expr
                     #'n
                     #:loop-args
-                    (list #'(+ n step)))]))
+                    (list #'(+ n step.c)))]))
 
 (define-syntax (from-list stx)
   (syntax-parse stx
