@@ -3,16 +3,28 @@
 (require (for-syntax racket/base
                      syntax/parse))
 
-(provide (for-syntax unexpanded-iterator
-                     expanded-iterator
-                     make-iterator)
+(provide (for-syntax (all-from-out 'protected))
          from-vector
          from-range
          from-list
          from-naturals
          from-hash)
 
-(begin-for-syntax
+(module protected racket/base
+  (require syntax/parse
+           racket/contract/base)
+
+  (provide (contract-out
+            [make-iterator
+             (-> #:let*-values (listof syntax?)
+                 #:loop-bindings (listof syntax?)
+                 #:checks (listof syntax?)
+                 #:match-expr syntax?
+                 #:loop-args (listof syntax?)
+                 syntax?)])
+           expanded-iterator
+           unexpanded-iterator)
+
   (define-syntax-class unexpanded-iterator
     (pattern unexpanded:expr
              #:with
@@ -43,19 +55,22 @@
     (syntax-parse (list outer-bindings loop-bindings checks match-expr loop-args)
       [i:expanded-iterator #'i])))
 
+(require (for-syntax 'protected))
+
 (define-syntax (from-vector stx)
   (syntax-parse stx
     [(_ v:expr)
      (make-iterator #:let*-values
-                    #'([(vect) v] [(len) (vector-length vect)])
+                    (list #'[(vect) v]
+                          #'[(len) (vector-length vect)])
                     #:loop-bindings
-                    #'([pos 0])
+                    (list #'[pos 0])
                     #:checks
-                    #'((< pos len))
+                    (list #'(< pos len))
                     #:match-expr
                     #'(vector-ref vect pos)
                     #:loop-args
-                    #'((add1 pos)))]))
+                    (list #'(add1 pos)))]))
 
 (define-syntax (from-range stx)
   (syntax-parse stx
