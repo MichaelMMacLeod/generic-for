@@ -62,6 +62,25 @@
                   x)
                 '(0 1 2 3 4))
 
+  (check-exn exn:fail?
+             (λ ()
+               (for (to-vector #:grow-from 'a)
+                 ([x (from-range 10)])
+                 x)))
+
+  (check-exn exn:fail?
+             (λ ()
+               (for (to-vector #:grow-from 1
+                               #:with values)
+                 ([x (from-range 10)])
+                 x)))
+
+  (check-exn exn:fail?
+             (λ ()
+               (for (to-vector #:length -1)
+                 ([x (from-range 10)])
+                 x)))
+
   (check-equal? (for (to-list)
                   ([x (from-range 3)])
                   (for (to-list)
@@ -70,6 +89,13 @@
                 '((0 0 0)
                   (0 1 2)
                   (0 2 4)))
+
+  (check-exn exn:fail?
+             (λ ()
+               (for (to-vector #:length 5
+                               #:fill (values 'not 'okay))
+                 ([x (from-range 5)])
+                 x)))
 
   (check-equal? (for to-list
                   ([x from-naturals]

@@ -2,6 +2,7 @@
 
 (require (for-syntax racket/base
                      syntax/parse)
+         racket/contract/base
          racket/vector)
 
 (provide (for-syntax accumulator
@@ -23,7 +24,8 @@
                      (loop-arg:expr ...)
                      done-expr:expr)
              (local-expand (if (identifier? #'unexpanded)
-                               #'(unexpanded)
+                               (syntax/loc #'unexpanded
+                                 (unexpanded))
                                #'unexpanded)
                            'expression
                            #f)))
@@ -53,13 +55,17 @@
     #:track-literals
     [(_)
      #'(to-vector #:grow-from 16 #:by 2)]
-    [(_ #:grow-from initial-capacity:expr)
+    [(_ #:grow-from initial-capacity)
      #'(to-vector #:grow-from initial-capacity #:by 2)]
-    [(_ #:grow-from initial-capacity:expr #:by multiplier:expr)
+    [(_ #:grow-from initial-capacity #:by multiplier)
      #'(to-vector #:grow-from initial-capacity #:with (λ (len) (* len multiplier)))]
-    [(_ #:grow-from initial-capacity:expr #:with growth-proc:expr)
+    [(_ #:grow-from (~var initial-capacity (expr/c #'exact-positive-integer?))
+        #:with (~var growth-proc (expr/c #'(->i ([old-size exact-positive-integer?])
+                                                [new-size (old-size)
+                                                          (and/c exact-integer?
+                                                                 (>/c old-size))]))))
      #'(()
-        ([vect (make-vector initial-capacity)] [pos 0])
+        ([vect (make-vector initial-capacity.c)] [pos 0])
         ()
         (body-result)
         ((let ([len (vector-length vect)])
@@ -67,17 +73,18 @@
                   (vector-set! vect pos body-result)
                   vect]
                  [else
-                  (define new-len (growth-proc len))
+                  (define new-len (growth-proc.c len))
                   (define new-vect (make-vector new-len))
                   (vector-copy! new-vect 0 vect)
                   (vector-set! new-vect pos body-result)
                   new-vect]))
          (add1 pos))
         (vector-copy vect 0 pos))]
-    [(_ #:length l:expr)
+    [(_ #:length l)
      #'(to-vector #:length l #:fill 0)]
-    [(_ #:length l:expr #:fill fill:expr)
-     #'(([(len) l] [(vect) (make-vector len fill)])
+    [(_ #:length (~var l (expr/c #'exact-nonnegative-integer?))
+        #:fill (~var fill (expr/c #'any/c)))
+     #'(([(len) l.c] [(vect) (make-vector len fill.c)])
         ([pos 0])
         ((< pos len))
         (body-result)
