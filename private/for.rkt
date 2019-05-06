@@ -28,13 +28,24 @@
                  body ...)
              #'(match-let*-values
                    ([(pattern ...) iterator.match-expr] ...)
-                 body ...))])
+                 body ...))]
+        [(accumulator-outer-checks ...)
+         (if (equal? #f (syntax-e #'accumulator.outer-check))
+             #'()
+             #'(accumulator.outer-check))]
+        [(iterator-outer-checks ...)
+         (foldl (λ (check useful-checks)
+                  (if (equal? #f (syntax-e check))
+                      useful-checks
+                      (cons check useful-checks)))
+                '()
+                (syntax->list #'(iterator.outer-check ...)))])
        #'(let*-values ([(accumulator.outer-id ...) accumulator.outer-expr]
                        ...
                        [(iterator.outer-id ...) iterator.outer-expr]
                        ... ...)
-           accumulator.outer-check
-           iterator.outer-check ...
+           accumulator-outer-checks ...
+           iterator-outer-checks ...
            (let loop ([accumulator.loop-id accumulator.loop-expr]
                       ...
                       [iterator.loop-id iterator.loop-expr]
