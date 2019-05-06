@@ -19,6 +19,7 @@
               outer-check:expr
               ([loop-id:id loop-expr:expr] ...)
               guard:expr
+              ([(inner-id:id ...) inner-expr:expr] ...)
               match-expr:expr
               (loop-arg:expr ...))
              (local-expand (if (identifier? #'unexpanded)
@@ -33,6 +34,7 @@
               outer-check:expr
               ([loop-id:id loop-expr:expr] ...)
               guard:expr
+              ([(inner-id:id ...) inner-expr:expr] ...)
               match-expr:expr
               (loop-arg:expr ...)))))
 
@@ -43,6 +45,7 @@
         #t
         ([pos 0])
         (< pos len)
+        ()
         (vector-ref vect pos)
         ((add1 pos)))]))
 
@@ -61,6 +64,7 @@
         (if (< step.c 0)
             (> n end.c)
             (< n end.c))
+        ()
         n
         ((+ n step.c)))]))
 
@@ -71,6 +75,7 @@
         #t
         ([lst l.c])
         (pair? lst)
+        ()
         (car lst)
         ((cdr lst)))]))
 
@@ -83,6 +88,7 @@
         #t
         ([n start.c])
         ()
+        ()
         n
         ((add1 n)))]))
 
@@ -93,6 +99,7 @@
         #t
         ([index (hash-iterate-first ht)])
         index
+        ()
         (values (hash-iterate-key ht index)
                 (hash-iterate-value ht index))
         ((hash-iterate-next ht index)))]))

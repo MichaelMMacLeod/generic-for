@@ -40,6 +40,10 @@
                       [iterator.loop-id iterator.loop-expr]
                       ... ...)
              (if (and accumulator.guard iterator.guard ...)
-                 (let-values ([(accumulator.body-result ...) match-body])
-                   (loop accumulator.loop-arg ... iterator.loop-arg ... ...))
+                 (let*-values ([(accumulator.inner-id ...) accumulator.inner-expr]
+                               ...
+                               [(iterator.inner-id ...) iterator.inner-expr]
+                               ... ...)
+                   (let-values ([(accumulator.body-result ...) match-body])
+                     (loop accumulator.loop-arg ... iterator.loop-arg ... ...)))
                  accumulator.done-expr))))]))
