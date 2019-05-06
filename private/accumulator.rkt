@@ -52,7 +52,7 @@
      #'(to-list #:reverse? #t)]
     [(_ #:reverse? (~var reverse? (expr/c #'boolean?)))
      #'(()
-        #t
+        #f
         ([acc '()])
         #t
         ()
@@ -77,7 +77,7 @@
                                                           (and/c exact-integer?
                                                                  (>/c old-size))]))))
      #'(()
-        #t
+        #f
         ([vect (make-vector initial-capacity.c)] [pos 0])
         #t
         ()
@@ -101,7 +101,7 @@
     [(_ #:length (~var l (expr/c #'exact-nonnegative-integer?))
         #:fill (~var fill (expr/c #'any/c)))
      #'(([(len) l.c] [(vect) (make-vector len fill.c)])
-        #t
+        #f
         ([pos 0])
         (< pos len)
         ()
@@ -117,7 +117,7 @@
   (syntax-parse stx
     [(_)
      #'(()
-        #t
+        #f
         ([table (hash)])
         #t
         ()
@@ -135,7 +135,7 @@
     [(_ [arg:id (~var val (expr/c #'any/c))] ... #:result result:expr)
      (with-syntax ([(last-body ...) (generate-temporaries #'([arg val] ...))])
        #'(()
-          #t
+          #f
           ([arg val.c] ...)
           #t
           ()
@@ -149,7 +149,7 @@
   (syntax-parse stx
     [(_)
      #'(()
-        #t
+        #f
         ()
         #t
         ()

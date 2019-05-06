@@ -46,7 +46,7 @@
   (syntax-parse stx
     [(_ (~var v (expr/c #'vector?)))
      #'(([(vect) v.c] [(len) (vector-length vect)])
-        #t
+        #f
         ([pos 0])
         (< pos len)
         ()
@@ -65,7 +65,7 @@
         (~var end (expr/c #'real?))
         (~var step (expr/c #'real?)))
      #'(()
-        #t
+        #f
         ([n start.c])
         (if (< step.c 0)
             (> n end.c)
@@ -80,7 +80,7 @@
   (syntax-parse stx
     [(_ (~var l (expr/c #'list?)))
      #'(()
-        #t
+        #f
         ([lst l.c])
         (pair? lst)
         ()
@@ -95,9 +95,9 @@
      #'(from-naturals 0)]
     [(_ (~var start (expr/c #'exact-nonnegative-integer?)))
      #'(()
-        #t
+        #f
         ([n start.c])
-        ()
+        #t
         ()
         #t
         n
@@ -108,7 +108,7 @@
   (syntax-parse stx
     [(_ (~var table (expr/c #'hash?)))
      #'(([(ht) table.c])
-        #t
+        #f
         ([index (hash-iterate-first ht)])
         index
         ()
