@@ -4,12 +4,27 @@
                      syntax/parse)
          racket/vector)
 
-(provide vector-copy
+(provide (for-syntax accumulator)
+         vector-copy
          to-list
          to-vector
          to-hash-set
          to-fold
          to-void)
+
+(begin-for-syntax
+  (define-syntax-class accumulator
+    (pattern unexpanded:expr
+             #:with (([(outer-id:id ...) outer-expr:expr] ...)
+                     ([loop-id:id loop-expr:expr] ...)
+                     (body-result:id ...)
+                     (loop-arg:expr ...)
+                     done-expr:expr)
+             (local-expand (if (identifier? #'unexpanded)
+                               #'(unexpanded)
+                               #'unexpanded)
+                           'expression
+                           #f))))
 
 (define-syntax (to-list stx)
   (syntax-parse stx

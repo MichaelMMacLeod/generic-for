@@ -9,20 +9,6 @@
 
 (provide (rename-out [unified-for for]))
 
-(begin-for-syntax
-  (define-syntax-class accumulator
-    (pattern unexpanded:expr
-             #:with (([(outer-id:id ...) outer-expr:expr] ...)
-                     ([loop-id:id loop-expr:expr] ...)
-                     (body-result:id ...)
-                     (loop-arg:expr ...)
-                     done-expr:expr)
-             (local-expand (if (identifier? #'unexpanded)
-                               #'(unexpanded)
-                               #'unexpanded)
-                           'expression
-                           #f))))
-
 (define-syntax (unified-for stx)
   (syntax-parse stx
     [(_ ([pattern:expr ...+ iterator:iterator] ...) body ...+)
