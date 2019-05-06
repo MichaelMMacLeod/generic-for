@@ -117,8 +117,8 @@
 
 (define-syntax (from-hash stx)
   (syntax-parse stx
-    [(_ table:expr)
-     #'(([(ht) table])
+    [(_ (~var table (expr/c #'hash?)))
+     #'(([(ht) table.c])
         ([index (hash-iterate-first ht)])
         (index)
         (values (hash-iterate-key ht index)
