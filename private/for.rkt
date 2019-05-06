@@ -1,6 +1,7 @@
 #lang racket/base
 
 (require (for-syntax racket/base
+                     racket/syntax
                      syntax/apply-transformer
                      syntax/parse)
          racket/match
@@ -20,16 +21,8 @@
           ...+
           (~describe "iterator" iterator:iterator)] ...)
         body ...+)
-     (with-syntax
-       ([match-body
-         (if (andmap identifier? (syntax->list #'(pattern ... ...)))
-             #'(let*-values
-                   ([(pattern ...) iterator.match-expr] ...)
-                 body ...)
-             #'(match-let*-values
-                   ([(pattern ...) iterator.match-expr] ...)
-                 body ...))]
-        [(accumulator-outer-checks ...)
+     (with-syntax*
+       ([(accumulator-outer-checks ...)
          (if (equal? #f (syntax-e #'accumulator.outer-check))
              #'()
              #'(accumulator.outer-check))]
@@ -72,7 +65,15 @@
                       useful-checks
                       (cons check useful-checks)))
                 '()
-                (syntax->list #'(iterator.post-guard ...)))])
+                (syntax->list #'(iterator.post-guard ...)))]
+        [match-body
+         (if (andmap identifier? (syntax->list #'(pattern ... ...)))
+             #'(let*-values
+                   ([(pattern ...) iterator.match-expr] ...)
+                 body ...)
+             #'(match-let*-values
+                   ([(pattern ...) iterator.match-expr] ...)
+                 body ...))])
        #'(let*-values ([(accumulator.outer-id ...) accumulator.outer-expr]
                        ...
                        [(iterator.outer-id ...) iterator.outer-expr]
