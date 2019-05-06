@@ -50,7 +50,29 @@
                       useful-checks
                       (cons check useful-checks)))
                 '()
-                (syntax->list #'(iterator.pos-guard ...)))])
+                (syntax->list #'(iterator.pos-guard ...)))]
+        [(accumulator-pre-guards ...)
+         (if (equal? #t (syntax-e #'accumulator.pre-guard))
+             #'()
+             #'(accumulator.pre-guard))]
+        [(iterator-pre-guards ...)
+         (foldl (λ (check useful-checks)
+                  (if (equal? #t (syntax-e check))
+                      useful-checks
+                      (cons check useful-checks)))
+                '()
+                (syntax->list #'(iterator.pre-guard ...)))]
+        [(accumulator-post-guards ...)
+         (if (equal? #t (syntax-e #'accumulator.post-guard))
+             #'()
+             #'(accumulator.post-guard))]
+        [(iterator-post-guards ...)
+         (foldl (λ (check useful-checks)
+                  (if (equal? #t (syntax-e check))
+                      useful-checks
+                      (cons check useful-checks)))
+                '()
+                (syntax->list #'(iterator.post-guard ...)))])
        #'(let*-values ([(accumulator.outer-id ...) accumulator.outer-expr]
                        ...
                        [(iterator.outer-id ...) iterator.outer-expr]
@@ -66,9 +88,9 @@
                                ...
                                [(iterator.inner-id ...) iterator.inner-expr]
                                ... ...)
-                   (if (and accumulator.pre-guard iterator.pre-guard ...)
+                   (if (and accumulator-pre-guards ... iterator-pre-guards ...)
                        (let-values ([(accumulator.body-result ...) match-body])
-                         (if (and accumulator.post-guard iterator.post-guard ...)
+                         (if (and accumulator-post-guards ... iterator-post-guards ...)
                              (loop accumulator.loop-arg ... iterator.loop-arg ... ...)
                              accumulator.done-expr))
                        accumulator.done-expr))
