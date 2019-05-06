@@ -17,7 +17,7 @@
              #:with
              (([(outer-id:id ...) outer-expr:expr] ...)
               ([loop-id:id loop-expr:expr] ...)
-              (guard:expr ...)
+              guard:expr
               match-expr:expr
               (loop-arg:expr ...))
              (local-expand (if (identifier? #'unexpanded)
@@ -30,7 +30,7 @@
   (define-syntax-class expanded-iterator
     (pattern (([(outer-id:id ...) outer-expr:expr] ...)
               ([loop-id:id loop-expr:expr] ...)
-              (guard:expr ...)
+              guard:expr
               match-expr:expr
               (loop-arg:expr ...)))))
 
@@ -39,7 +39,7 @@
     [(_ (~var v (expr/c #'vector?)))
      #'(([(vect) v.c] [(len) (vector-length vect)])
         ([pos 0])
-        ((< pos len))
+        (< pos len)
         (vector-ref vect pos)
         ((add1 pos)))]))
 
@@ -54,9 +54,9 @@
         (~var step (expr/c #'real?)))
      #'(()
         ([n start.c])
-        ((if (< step.c 0)
-             (> n end.c)
-             (< n end.c)))
+        (if (< step.c 0)
+            (> n end.c)
+            (< n end.c))
         n
         ((+ n step.c)))]))
 
@@ -65,7 +65,7 @@
     [(_ (~var l (expr/c #'list?)))
      #'(()
         ([lst l.c])
-        ((pair? lst))
+        (pair? lst)
         (car lst)
         ((cdr lst)))]))
 
@@ -85,7 +85,7 @@
     [(_ (~var table (expr/c #'hash?)))
      #'(([(ht) table.c])
         ([index (hash-iterate-first ht)])
-        (index)
+        index
         (values (hash-iterate-key ht index)
                 (hash-iterate-value ht index))
         ((hash-iterate-next ht index)))]))
