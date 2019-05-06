@@ -27,12 +27,12 @@
                            'expression
                            #f)))
 
-(define-syntax-class expanded-iterator
-  (pattern (([(outer-id:id ...) outer-expr:expr] ...)
-            ([loop-id:id loop-expr:expr] ...)
-            (pos-guard:expr ...)
-            match-expr:expr
-            (loop-arg:expr ...)))))
+  (define-syntax-class expanded-iterator
+    (pattern (([(outer-id:id ...) outer-expr:expr] ...)
+              ([loop-id:id loop-expr:expr] ...)
+              (pos-guard:expr ...)
+              match-expr:expr
+              (loop-arg:expr ...)))))
 
 (define-syntax (from-vector stx)
   (syntax-parse stx
