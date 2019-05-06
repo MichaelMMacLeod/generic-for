@@ -36,10 +36,10 @@
 
   (define (make-iterator
            #:let*-values outer-bindings
-           #:let-loop loop-bindings
-           #:only-if checks
-           #:bind match-expr
-           #:loop loop-args)
+           #:loop-bindings loop-bindings
+           #:checks checks
+           #:match-expr match-expr
+           #:loop-args loop-args)
     (syntax-parse (list outer-bindings loop-bindings checks match-expr loop-args)
       [i:expanded-iterator #'i])))
 
@@ -48,13 +48,13 @@
     [(_ v:expr)
      (make-iterator #:let*-values
                     #'([(vect) v] [(len) (vector-length vect)])
-                    #:let-loop
+                    #:loop-bindings
                     #'([pos 0])
-                    #:only-if
+                    #:checks
                     #'((< pos len))
-                    #:bind
+                    #:match-expr
                     #'(vector-ref vect pos)
-                    #:loop
+                    #:loop-args
                     #'((add1 pos)))]))
 
 (define-syntax (from-range stx)
