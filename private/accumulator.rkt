@@ -40,13 +40,13 @@
   (syntax-parse stx
     [(_)
      #'(to-list #:reverse? #t)]
-    [(_ #:reverse? reverse?:expr)
+    [(_ #:reverse? (~var reverse? (expr/c #'boolean?)))
      #'(()
         ([acc '()])
         ()
         (body-result)
         ((cons body-result acc))
-        (if reverse? (reverse acc) acc))]))
+        (if reverse?.c (reverse acc) acc))]))
 
 (define-syntax (to-vector stx)
   (syntax-parse stx
