@@ -37,7 +37,7 @@
                       ...
                       [iterator.loop-id iterator.loop-expr]
                       ... ...)
-             (if (and iterator.pos-guard ... ...)
+             (if (and iterator.guard ... ...)
                  (let-values ([(accumulator.body-result ...) match-body])
                    (loop accumulator.loop-arg ... iterator.loop-arg ... ...))
                  accumulator.done-expr))))]))

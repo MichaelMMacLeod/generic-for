@@ -17,7 +17,7 @@
              #:with
              (([(outer-id:id ...) outer-expr:expr] ...)
               ([loop-id:id loop-expr:expr] ...)
-              (pos-guard:expr ...)
+              (guard:expr ...)
               match-expr:expr
               (loop-arg:expr ...))
              (local-expand (if (identifier? #'unexpanded)
@@ -30,7 +30,7 @@
   (define-syntax-class expanded-iterator
     (pattern (([(outer-id:id ...) outer-expr:expr] ...)
               ([loop-id:id loop-expr:expr] ...)
-              (pos-guard:expr ...)
+              (guard:expr ...)
               match-expr:expr
               (loop-arg:expr ...)))))
 
