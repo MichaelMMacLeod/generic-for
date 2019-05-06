@@ -25,14 +25,14 @@
 
 (define-syntax (unified-for stx)
   (syntax-parse stx
-    [(_ ([pattern:expr ...+ iterator:unexpanded-iterator] ...) body ...+)
+    [(_ ([pattern:expr ...+ iterator:iterator] ...) body ...+)
      #'(unified-for to-void
                     ([pattern ... iterator] ...)
                     body ...)]
     [(_ accumulator:accumulator
         ([(~describe "match pattern" pattern:expr)
           ...+
-          (~describe "iterator" iterator:unexpanded-iterator)] ...)
+          (~describe "iterator" iterator:iterator)] ...)
         body ...+)
      (with-syntax
        ([match-body

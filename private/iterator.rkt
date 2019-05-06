@@ -4,7 +4,7 @@
                      syntax/parse))
 
 (provide (for-syntax expanded-iterator
-                     unexpanded-iterator)
+                     iterator)
          from-vector
          from-range
          from-list
@@ -12,7 +12,7 @@
          from-hash)
 
 (begin-for-syntax
-  (define-syntax-class unexpanded-iterator
+  (define-syntax-class iterator
     (pattern unexpanded:expr
              #:with
              (([(outer-id:id ...) outer-expr:expr] ...)
