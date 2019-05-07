@@ -84,42 +84,44 @@
              #'(if (and accumulator-post-guards ... iterator-post-guards ...)
                    (loop accumulator.loop-arg ... iterator.loop-arg ... ...)
                    accumulator.done-expr))]
-        [body-result-form
+        [(body-result-form ...)
          (if (empty? (syntax->list #'(accumulator.body-result ...)))
-             #'(begin
-                 match-body ...
-                 post-guard-form)
-             #'(let-values ([(accumulator.body-result ...) match-body ...])
-                 post-guard-form))]
-        [pre-guard-form
+             #'(match-body ... post-guard-form)
+             #'((let-values ([(accumulator.body-result ...) match-body ...])
+                  post-guard-form)))]
+        [(pre-guard-form ...)
          (if (and (empty? (syntax->list #'(accumulator-pre-guards ...)))
                   (empty? (syntax->list #'(iterator-pre-guards ...))))
-             #'body-result-form
-             #'(if (and accumulator-pre-guards ... iterator-pre-guards ...)
-                   body-result-form
-                   accumulator.done-expr))]
-        [inner-form
+             #'(body-result-form ...)
+             #'((if (and accumulator-pre-guards ... iterator-pre-guards ...)
+                    (begin body-result-form ...)
+                    accumulator.done-expr)))]
+        [(inner-form ...)
          (if (and (empty? (syntax->list #'(accumulator.inner-id ... ...)))
                   (empty? (syntax->list #'(iterator.inner-id ... ... ...))))
-             #'pre-guard-form
-             #'(let*-values ([(accumulator.inner-id ...) accumulator.inner-expr]
-                             ...
-                             [(iterator.inner-id ...) iterator.inner-expr]
-                             ... ...)
-                 pre-guard-form))]
-        [pos-guard-form
+             #'(pre-guard-form ...)
+             #'((let*-values ([(accumulator.inner-id ...) accumulator.inner-expr]
+                              ...
+                              [(iterator.inner-id ...) iterator.inner-expr]
+                              ... ...)
+                  pre-guard-form ...)))]
+        [(pos-guard-form ...)
          (if (and (empty? (syntax->list #'(accumulator-pos-guards ...)))
                   (empty? (syntax->list #'(iterator-pos-guards ...))))
-             #'inner-form
-             #'(if (and accumulator-pos-guards ... iterator-pos-guards ...)
-                   inner-form
-                   accumulator.done-expr))]
+             #'(inner-form ...)
+             (if (= 1 (length (syntax->list #'(inner-form ...))))
+                 #'((if (and accumulator-pos-guards ... iterator-pos-guards ...)
+                        inner-form ...
+                        accumulator.done-expr))
+                 #'((if (and accumulator-pos-guards ... iterator-pos-guards ...)
+                        (begin inner-form ...)
+                        accumulator.done-expr))))]
         [loop-form
          #'(let loop ([accumulator.loop-id accumulator.loop-expr]
                       ...
                       [iterator.loop-id iterator.loop-expr]
                       ... ...)
-             pos-guard-form)]
+             pos-guard-form ...)]
         [outer-form
          (if (and (empty? (syntax->list #'(accumulator.outer-id ... ...)))
                   (empty? (syntax->list #'(iterator.outer-id ... ... ...))))
