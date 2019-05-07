@@ -16,6 +16,28 @@
            racket/port
            racket/set))
 
+(module+ test ;; #:when
+  (check-equal? (for to-list
+                  ([x (from-range 3)]
+                   [#:when #t]
+                   [y (from-range 3)])
+                  (cons x y))
+                '((0 . 0) (0 . 1) (0 . 2) (1 . 0) (1 . 1) (1 . 2) (2 . 0) (2 . 1) (2 . 2)))
+  (check-equal? (for to-list
+                  ([x (from-range 3)]
+                   [#:when #f]
+                   [y (from-range 3)])
+                  (cons x y))
+                '())
+  #;(check-equal? (with-output-to-string
+                  (λ ()
+                    (for ([x (in-list '(0 1 2))]
+                          [#:when #t]
+                          [y (in-vector #(0 1 2))])
+                      (display (~a x y)))))
+                "000102101112202122")
+  )
+
 (module+ test ;; to-list
   (check-expect (for to-list
                   ([x (from-range 3)]) x)

@@ -38,7 +38,7 @@
          clause.post-guard
          (clause.loop-arg ...))]]))
 
-(define-for-syntax (expand-accumulator stx)0
+(define-for-syntax (expand-accumulator stx)
   (syntax-parse stx
     [a:accumulator
      #'(([(a.outer-id ...) a.outer-expr] ...)
@@ -52,99 +52,97 @@
         (a.loop-arg ...)
         a.done-expr)]))
 
+(define-for-syntax (build-body stx)
+  (syntax-parse stx
+    [(accumulator:expanded-accumulator iterator:expanded-iterator ... body-form)
+     #'(let*-values ([(accumulator.outer-id ...) accumulator.outer-expr]
+                     ...
+                     [(iterator.outer-id ...) iterator.outer-expr]
+                     ... ...)
+         accumulator.outer-check ...
+         iterator.outer-check ... ...
+         (let loop ([accumulator.loop-id accumulator.loop-expr]
+                    ...
+                    [iterator.loop-id iterator.loop-expr]
+                    ... ...)
+           (if (and accumulator.pos-guard iterator.pos-guard ...)
+               (let*-values ([(accumulator.inner-id ...) accumulator.inner-expr]
+                             ...
+                             [(iterator.inner-id ...) iterator.inner-expr]
+                             ... ...)
+                 (if (and accumulator.pre-guard iterator.pre-guard ...)
+                     body-form
+                     accumulator.done-expr))
+               accumulator.done-expr)))]))
+
+(define-for-syntax (expand-unified-for stx)
+  (syntax-parse stx
+    [(accumulator:accumulator
+      (loop-clause:loop-clause ...)
+      body ...+)
+     (with-syntax
+       ([expanded-acc (expand-accumulator #'accumulator)]
+        [(expanded-clause ...)
+         (map expand-loop-clause (syntax->list #'(loop-clause ...)))])
+       #'(expanded-acc (expanded-clause ...) body ...))]))
+
 (define-syntax (unified-for-unoptimized stx)
   (syntax-parse stx
-    [(_ ([pattern:expr ...+ iterator:iterator] ...) body ...+)
-     #'(unified-for-unoptimized to-void
-                                ([pattern ... iterator] ...)
-                                body ...)]
+    [(_ (~optional accumulator #:defaults ([accumulator #'to-void]))
+        (loop-clause:loop-clause ...) body ...+)
+     (with-syntax
+       ([(expanded-accumulator (expanded-clause ...) body ...)
+         (expand-unified-for #'(accumulator (loop-clause ...) body ...))])
+       #'(unified-for-unoptimized expanded-accumulator
+                                  (expanded-clause ...)
+                                  body ...))]
     [(_ accumulator:expanded-accumulator
         ([pattern:expr ...+ iterator:expanded-iterator]
          ...
          [#:when when-expr:expr]
          loop-clause ...+)
         body ...+)
-     #'(let*-values ([(accumulator.outer-id ...) accumulator.outer-expr]
-                     ...
-                     [(iterator.outer-id ...) iterator.outer-expr]
-                     ... ...)
-         accumulator.outer-check ...
-         iterator.outer-check ... ...
-         (let loop ([accumulator.loop-id accumulator.loop-expr]
-                    ...
-                    [iterator.loop-id iterator.loop-expr]
-                    ... ...)
-           (if (and accumulator.pos-guard iterator.pos-guard ...)
-               (let*-values ([(accumulator.inner-id ...) accumulator.inner-expr]
-                             ...
-                             [(iterator.inner-id ...) iterator.inner-expr]
-                             ... ...)
-                 (if (and accumulator.pre-guard iterator.pre-guard ...)
-                     (match-let*-values
-                         ([(pattern ...) iterator.match-expr] ...)
-                       (if (and accumulator.post-guard iterator.post-guard ...)
-                           (if when-expr
-                               (let-values ([(accumulator.loop-id ...)
-                                             (unified-for-unoptimized
-                                              (()
-                                               ()
-                                               ([accumulator.loop-id accumulator.loop-id] ...)
-                                               accumulator.pos-guard
-                                               ([(accumulator.inner-id ...)
-                                                 accumulator.inner-expr]
-                                                ...)
-                                               accumulator.pre-guard
-                                               (accumulator.body-result ...)
-                                               accumulator.post-guard
-                                               (accumulator.loop-arg ...)
-                                               accumulator.loop-id ...)
-                                              (loop-clause ...)
-                                              body ...)])
-                                 (loop accumulator.loop-id ...
-                                       iterator.loop-arg ... ...))
-                               (loop accumulator.loop-id ...
-                                     iterator.loop-arg ... ...))
-                           accumulator.done-expr))
-                     accumulator.done-expr))
-               accumulator.done-expr)))]
+     (with-syntax
+       ([body
+         #'(match-let*-values
+               ([(pattern ...) iterator.match-expr] ...)
+             (if (and accumulator.post-guard iterator.post-guard ...)
+                 (if when-expr
+                     (let-values ([(accumulator.loop-id ...)
+                                   (unified-for-unoptimized
+                                    (()
+                                     ()
+                                     ([accumulator.loop-id accumulator.loop-id] ...)
+                                     accumulator.pos-guard
+                                     ([(accumulator.inner-id ...)
+                                       accumulator.inner-expr]
+                                      ...)
+                                     accumulator.pre-guard
+                                     (accumulator.body-result ...)
+                                     accumulator.post-guard
+                                     (accumulator.loop-arg ...)
+                                     accumulator.loop-id ...)
+                                    (loop-clause ...)
+                                    body ...)])
+                       (loop accumulator.loop-id ...
+                             iterator.loop-arg ... ...))
+                     (loop accumulator.loop-id ...
+                           iterator.loop-arg ... ...))
+                 accumulator.done-expr))])
+       (build-body #'(accumulator iterator ... body)))]
     [(_ accumulator:expanded-accumulator
         ([pattern:expr ...+ iterator:expanded-iterator] ...)
         body ...+)
-     #'(let*-values ([(accumulator.outer-id ...) accumulator.outer-expr]
-                     ...
-                     [(iterator.outer-id ...) iterator.outer-expr]
-                     ... ...)
-         accumulator.outer-check ...
-         iterator.outer-check ... ...
-         (let loop ([accumulator.loop-id accumulator.loop-expr]
-                    ...
-                    [iterator.loop-id iterator.loop-expr]
-                    ... ...)
-           (if (and accumulator.pos-guard iterator.pos-guard ...)
-               (let*-values ([(accumulator.inner-id ...) accumulator.inner-expr]
-                             ...
-                             [(iterator.inner-id ...) iterator.inner-expr]
-                             ... ...)
-                 (if (and accumulator.pre-guard iterator.pre-guard ...)
-                     (let-values ([(accumulator.body-result ...)
-                                   (match-let*-values
-                                       ([(pattern ...) iterator.match-expr] ...)
-                                     body ...)])
-                       (if (and accumulator.post-guard iterator.post-guard ...)
-                           (loop accumulator.loop-arg ... iterator.loop-arg ... ...)
-                           accumulator.done-expr))
-                     accumulator.done-expr))
-               accumulator.done-expr)))]
-    [(_ accumulator:accumulator
-        (loop-clause:loop-clause ...)
-        body ...+)
      (with-syntax
-       ([expanded-acc (expand-accumulator #'accumulator)]
-        [(expanded-clause ...)
-         (map expand-loop-clause (syntax->list #'(loop-clause ...)))])
-       #'(unified-for-unoptimized expanded-acc
-                                  (expanded-clause ...)
-                                  body ...))]))
+       ([body
+         #'(let-values ([(accumulator.body-result ...)
+                         (match-let*-values
+                             ([(pattern ...) iterator.match-expr] ...)
+                           body ...)])
+             (if (and accumulator.post-guard iterator.post-guard ...)
+                 (loop accumulator.loop-arg ... iterator.loop-arg ... ...)
+                 accumulator.done-expr))])
+       (build-body #'(accumulator iterator ... body)))]))
 
 (define-syntax (unified-for stx)
   (syntax-parse stx
