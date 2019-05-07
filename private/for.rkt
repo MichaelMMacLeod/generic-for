@@ -68,13 +68,15 @@
                 '()
                 (syntax->list #'(iterator.post-guard ...)))]
         [match-body
-         (if (andmap identifier? (syntax->list #'(pattern ... ...)))
-             #'(let*-values
-                   ([(pattern ...) iterator.match-expr] ...)
-                 body ...)
-             #'(match-let*-values
-                   ([(pattern ...) iterator.match-expr] ...)
-                 body ...))]
+         (if (empty? (syntax->list #'(pattern ... ...)))
+             #'(begin body ...)
+             (if (andmap identifier? (syntax->list #'(pattern ... ...)))
+                 #'(let*-values
+                       ([(pattern ...) iterator.match-expr] ...)
+                     body ...)
+                 #'(match-let*-values
+                       ([(pattern ...) iterator.match-expr] ...)
+                     body ...)))]
         [post-guard-form
          (if (and (empty? (syntax->list #'(accumulator-post-guards ...)))
                   (empty? (syntax->list #'(iterator-post-guards ...))))
