@@ -79,7 +79,8 @@
     [(_ #:grow-from initial-capacity:expr)
      #'(to-vector #:grow-from initial-capacity #:by 2)]
     [(_ #:grow-from initial-capacity:expr #:by multiplier:expr)
-     #`(([(vect) (make-vector initial-capacity)])
+     #`(([(vect) (make-vector initial-capacity)]
+         [(pos) 0])
         ((unless (exact-positive-integer? initial-capacity)
             #,(syntax/loc #'initial-capacity
                 (raise-argument-error 'to-vector
@@ -90,24 +91,24 @@
                 (raise-argument-error 'to-vector
                                       "(and/c exact-integer? (>/c 1))"
                                       multiplier))))
-        ([iter-vect vect] [pos 0])
+        ([iter-vect vect] [iter-pos pos])
         #t
         ()
         #t
         (body-result)
         #t
         ((let ([len (vector-length iter-vect)])
-           (cond [(< pos len)
-                  (vector-set! iter-vect pos body-result)
+           (cond [(< iter-pos len)
+                  (vector-set! iter-vect iter-pos body-result)
                   iter-vect]
                  [else
                   (define new-len (* multiplier len))
                   (define new-vect (make-vector new-len))
                   (vector-copy! new-vect 0 iter-vect)
-                  (vector-set! new-vect pos body-result)
+                  (vector-set! new-vect iter-pos body-result)
                   new-vect]))
-         (add1 pos))
-        (vector-copy iter-vect 0 pos))]
+         (add1 iter-pos))
+        (vector-copy iter-vect 0 iter-pos))]
     [(_ #:length len:expr)
      #'(to-vector #:length len #:fill 0)]
     [(_ #:length len:expr
