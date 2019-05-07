@@ -5,11 +5,13 @@
                      racket/syntax
                      syntax/apply-transformer
                      syntax/parse)
+         racket/format
          racket/match
          "accumulator.rkt"
          "iterator.rkt")
 
-(provide (rename-out [unified-for-unoptimized for]))
+(provide (rename-out [unified-for-unoptimized for])
+         (all-from-out racket/format))
 
 (begin-for-syntax
   (define-syntax-class when-clause
@@ -65,11 +67,17 @@
                              ... ...)
                  (if (and accumulator.pre-guard iterator.pre-guard ...)
                      (if when-expr
-                         (unified-for-unoptimized accumulator
-                                                  ([pattern ... iterator] ... loop-clause ...)
-                                                  body ...)
+                         (match-let*-values
+                             ([(pattern ...) iterator.match-expr] ...)
+                           (let*-values ([(accumulator.body-result ...)
+                                          (unified-for-unoptimized accumulator
+                                                                   (loop-clause ...)
+                                                                   body ...)])
+                             (if (and accumulator.post-guard iterator.post-guard ...)
+                                 (loop accumulator.loop-arg ... iterator.loop-arg ... ...)
+                                 accumulator.done-expr)))
                          (if (and accumulator.post-guard iterator.post-guard ...)
-                             (loop accumulator.loop-id ... iterator.loop-arg ... ...)
+                             (loop accumulator.loop-id ... iterator.loop-id ... ...) ; maybe bad
                              accumulator.done-expr))
                      accumulator.done-expr))
                accumulator.done-expr)))]
