@@ -80,28 +80,29 @@
                              [(iterator.inner-id ...) iterator.inner-expr]
                              ... ...)
                  (if (and accumulator.pre-guard iterator.pre-guard ...)
-                     (if when-expr
-                         (match-let*-values
-                             ([(pattern ...) iterator.match-expr] ...)
-                           (loop (unified-for-unoptimized
-                                  (()
-                                   ()
-                                   ([accumulator.loop-id accumulator.loop-id] ...)
-                                   accumulator.pos-guard
-                                   ([(accumulator.inner-id ...)
-                                     accumulator.inner-expr]
-                                    ...)
-                                   accumulator.pre-guard
-                                   (accumulator.body-result ...)
-                                   accumulator.post-guard
-                                   (accumulator.loop-arg ...)
-                                   accumulator.loop-id ...) ; only for to-list
-                                  (loop-clause ...)
-                                  body ...)
-                                 iterator.loop-arg ... ...))
-                         (if (and accumulator.post-guard iterator.post-guard ...)
-                             (loop accumulator.loop-id ... iterator.loop-id ... ...) ; maybe bad
-                             accumulator.done-expr))
+                     (match-let*-values
+                         ([(pattern ...) iterator.match-expr] ...)
+                       (if (and accumulator.post-guard iterator.post-guard ...)
+                           (if when-expr
+                               (loop (unified-for-unoptimized
+                                      (()
+                                       ()
+                                       ([accumulator.loop-id accumulator.loop-id] ...)
+                                       accumulator.pos-guard
+                                       ([(accumulator.inner-id ...)
+                                         accumulator.inner-expr]
+                                        ...)
+                                       accumulator.pre-guard
+                                       (accumulator.body-result ...)
+                                       accumulator.post-guard
+                                       (accumulator.loop-arg ...)
+                                       accumulator.loop-id ...) ; only for to-list
+                                      (loop-clause ...)
+                                      body ...)
+                                     iterator.loop-arg ... ...)
+                               (loop accumulator.loop-id ...
+                                     iterator.loop-arg ... ...))
+                           accumulator.done-expr))
                      accumulator.done-expr))
                accumulator.done-expr)))]
     [(_ accumulator:expanded-accumulator
