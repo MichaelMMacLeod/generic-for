@@ -12,7 +12,7 @@
                      unified-for
                      ))
 
-@title{Unified @racket[for] Loops}
+@title{Unified @racket[for] Loop}
 
 @author[(author+email "Michael M. MacLeod" "mmmacleo@ucsd.edu")]
 
@@ -32,6 +32,7 @@ code. It also allows identifiers to be bound with
      (make-evaluator 'racket/base
                      #:requires '(unified-for
                                   racket/list
+                                  racket/pretty
                                   racket/format))))
 
 @defform/subs[(for maybe-accumulator (loop-clause ...) body ...+)
@@ -50,7 +51,8 @@ code. It also allows identifiers to be bound with
 An @deftech{iterator} is a
 @seclink["stxtrans" #:doc '(lib "scribblings/reference/reference.scrbl")]{Syntax Transformer}
 for use in the @racket[_iterator-clause] of @racket[for]. See
-@seclink["defining-new-iterators"]{Defining New Iterators}.
+@seclink["extending-for"]{Extending @racket[for]} for how to implement new
+ones.
 
 @defform[(from-list lst)
          #:contracts ([lst list?])]{
@@ -79,7 +81,7 @@ for use in the @racket[_iterator-clause] of @racket[for]. See
                            [end-expr real?])]{
  Iterates over a range of @racket[real?] values from @racket[start] (inclusive) until
  @racket[end] (exclusive) by @racket[step]. If @racket[start-expr] or
- @racket[step-expr] are not provided, they are 0 and 1 respectively.
+ @racket[step-expr] are not provided, they are @racket[0] and @racket[1] respectively.
 
  @examples[#:eval example-evaluator
            (for ([x (from-range 5)])
@@ -94,8 +96,8 @@ for use in the @racket[_iterator-clause] of @racket[for]. See
               [(maybe-start (code:line)
                             start-expr)]
               #:contracts ([maybe-start exact-nonnegative-integer?])]{
- Iterates forever over @racket[natural?] numbers beginning with @racket[start], or 0 if
- @racket[start] is not supplied.
+ Iterates forever over @racket[natural?] numbers beginning with @racket[start], or
+ @racket[0] if @racket[start] is not supplied.
 
  @examples[#:eval example-evaluator
            (for ([index from-naturals]
@@ -124,7 +126,7 @@ An @deftech{accumulator} is a
 for use in the @racket[_maybe-accumulator] clause of @racket[for].
 
 @defform[(to-void)]{
- Returns @racket[(void)]. The result of the @racket[for]'s @racket[_body] clause is
+ Returns @|void-const|. The result of the @racket[for]'s @racket[_body] clause is
  ignored. It is the default @tech{accumulator} when none is provided to @racket[for].
 
  @examples[#:eval example-evaluator
@@ -180,16 +182,13 @@ for use in the @racket[_maybe-accumulator] clause of @racket[for].
  Accumulates single values into a mutable @racket[vector?].
 
  If @racket[expandable-option] is supplied, @racket[to-vector] will copy the existing
- values to a fresh mutable @racket[vector?] each time iteration exceeds its length. The size of the new
- vector is determined by @racket[growth-option]. If @racket[#:by multiplier-expr] is
- supplied, the length of the new vector will be
- @racket[(* old-length multiplier-expr)]. The vector is trimmed
- to the correct size when iteration concludes.
+ values to a fresh mutable @racket[vector?] each time iteration exceeds its length.
+ The size of the new vector is calculated as @racket[(* old-length multiplier-expr)].
+ The vector is trimmed to the correct size when iteration concludes.
 
- When no options are supplied, @racket[to-vector] uses the @racket[expandable-option]s
- @racket[#:grow-from 16 #:by 2], which equivalent to how @racket[for/vector] functions
- when no options are supplied.
-
+ When no arguments are supplied, @racket[to-vector] uses the @racket[expandable-option]s
+ @racket[#:grow-from 16 #:by 2].
+ 
  @examples[#:eval example-evaluator
            (for to-vector
                 ([x (from-range 5)])
@@ -199,7 +198,6 @@ for use in the @racket[_maybe-accumulator] clause of @racket[for].
                 ([x (from-range 5)])
              (* x 2))]
 
- 
  @margin-note{
   Supplying a length via @racket[#:length length-expr] can be more efficient than the
   default behavior. See @seclink["performance:to-vector"]{Performance: to-vector}
@@ -211,7 +209,7 @@ for use in the @racket[_maybe-accumulator] clause of @racket[for].
  length of the vector, results are silently ignored. The @racket[length-expr] option
  specifies the size of the vector, and @racket[fill-expr] specifies what to place
  in the vector if it is not completely filled by iteration. By default,
- @racket[fill-expr] is 0.
+ @racket[fill-expr] is @racket[0].
 
  @examples[#:eval example-evaluator
            (for (to-vector #:length 10)
@@ -224,17 +222,31 @@ for use in the @racket[_maybe-accumulator] clause of @racket[for].
 
 @section{Performance}
 
-The performance of @racket[for] depends in part upon the
-accumulator and iterators supplied. All iterators and accumulators provided from
-this package perform on-par with their @racketmodname[racket] counterparts, with
-some including extra functionality, like @racket[to-list]'s @racket[#:reverse?],
-and @racket[to-vector]'s @racket[#:grow-from], which can result in improved
-performance when used properly.
+The performance of @racket[for] depends largely upon the
+accumulator and iterators supplied to it. All iterators and accumulators provided from
+this package perform the same or faster than their @racketmodname[racket] counterparts.
 
-The @racket[for] syntax only expands into code that uses @racket[match] if
-non-identifier patterns are used. Otherwise, it is expanded directly into
-code that uses @racket[let-values]. This improves iteration speed by a
-small amount and reduces compiled bytecode sizes.
+The majority of code behind the @racket[for] transformer deals with removing
+dead/useless forms from its expansion. For instance, @racket[for] will only expand
+into code that uses @racket[match] if non-identifier patterns are used. Otherwise,
+it uses @racket[let-values] directly.
+
+@examples[#:eval example-evaluator
+          (define-namespace-anchor anchor)
+          (parameterize ([current-namespace
+                          (namespace-anchor->namespace anchor)])
+            (displayln "Only identifiers are binded; this expansion doesn't have match:")
+            (pretty-print
+             (syntax->datum
+              (expand-to-top-form
+               #'(for ([v (from-list '(1 2 3 4 5))])
+                   (display v)))))
+            (displayln "But this one, which uses a match pattern, does:")
+            (pretty-print
+             (syntax->datum
+              (expand-to-top-form
+               #'(for ([(var v) (from-list '(1 2 3 4 5))])
+                   (display v))))))]
 
 @subsection[#:tag "performance:to-list"]{to-list}
 
