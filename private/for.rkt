@@ -67,16 +67,16 @@
                       (cons check useful-checks)))
                 '()
                 (syntax->list #'(iterator.post-guard ...)))]
-        [match-body
+        [(match-body ...)
          (if (empty? (syntax->list #'(pattern ... ...)))
-             #'(begin body ...)
+             #'(body ...)
              (if (andmap identifier? (syntax->list #'(pattern ... ...)))
-                 #'(let*-values
-                       ([(pattern ...) iterator.match-expr] ...)
-                     body ...)
-                 #'(match-let*-values
-                       ([(pattern ...) iterator.match-expr] ...)
-                     body ...)))]
+                 #'((let*-values
+                        ([(pattern ...) iterator.match-expr] ...)
+                      body ...))
+                 #'((match-let*-values
+                        ([(pattern ...) iterator.match-expr] ...)
+                      body ...))))]
         [post-guard-form
          (if (and (empty? (syntax->list #'(accumulator-post-guards ...)))
                   (empty? (syntax->list #'(iterator-post-guards ...))))
@@ -87,9 +87,9 @@
         [body-result-form
          (if (empty? (syntax->list #'(accumulator.body-result ...)))
              #'(begin
-                 match-body
+                 match-body ...
                  post-guard-form)
-             #'(let-values ([(accumulator.body-result ...) match-body])
+             #'(let-values ([(accumulator.body-result ...) match-body ...])
                  post-guard-form))]
         [pre-guard-form
          (if (and (empty? (syntax->list #'(accumulator-pre-guards ...)))
