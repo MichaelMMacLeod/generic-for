@@ -11,6 +11,15 @@
 
 (provide (rename-out [unified-for for]))
 
+#;(define-syntax (unified-for-unoptimized stx)
+  (syntax-parse stx
+    [(_ ([pattern:expr ...+ iterator:iterator] ...) body ...+)
+     #'(unified-for-unoptimized to-void
+                                ([pattern ... iterator] ...)
+                                body ...)]
+    [(_ accumulator:accumulator
+        ([]))]))
+
 (define-syntax (unified-for stx)
   (syntax-parse stx
     [(_ ([pattern:expr ...+ iterator:iterator] ...) body ...+)
@@ -20,7 +29,7 @@
     [(_ accumulator:accumulator
         ([(~describe "match pattern" pattern:expr)
           ...+
-          (~describe "iterator" iterator:iterator)] ...)
+          iterator:iterator] ...)
         body ...+)
      (with-syntax*
        ([(accumulator-pos-guards ...)
