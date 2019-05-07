@@ -49,7 +49,16 @@
 (define-syntax (to-list stx)
   (syntax-parse stx
     [(_)
-     #'(to-list #:reverse? #t)]
+     #'(()
+        ()
+        ([acc '()])
+        #t
+        ()
+        #t
+        (body-result)
+        #t
+        ((cons body-result acc))
+        (reverse acc))]
     [(_ #:reverse? reverse?:expr)
      #'(()
         ()
