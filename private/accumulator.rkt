@@ -50,7 +50,7 @@
   (syntax-parse stx
     [(_)
      #'(to-list #:reverse? #t)]
-    [(_ #:reverse? (~var reverse? (expr/c #'boolean?)))
+    [(_ #:reverse? reverse?:expr)
      #'(()
         #f
         ([acc '()])
@@ -60,25 +60,29 @@
         (body-result)
         #t
         ((cons body-result acc))
-        (if reverse?.c (reverse acc) acc))]))
+        (if reverse? (reverse acc) acc))]))
 
 (define-syntax (to-vector stx)
   (syntax-parse stx
     #:track-literals
     [(_)
      #'(to-vector #:grow-from 16 #:by 2)]
-    [(_ #:grow-from initial-capacity)
+    [(_ #:grow-from initial-capacity:expr)
      #'(to-vector #:grow-from initial-capacity #:by 2)]
-    [(_ #:grow-from initial-capacity #:by multiplier)
-     #'(to-vector #:grow-from initial-capacity #:with (λ (len) (* len multiplier)))]
-    [(_ #:grow-from (~var initial-capacity (expr/c #'exact-positive-integer?))
-        #:with (~var growth-proc (expr/c #'(->i ([old-size exact-positive-integer?])
-                                                [new-size (old-size)
-                                                          (and/c exact-integer?
-                                                                 (>/c old-size))]))))
-     #'(()
-        #f
-        ([vect (make-vector initial-capacity.c)] [pos 0])
+    [(_ #:grow-from initial-capacity:expr #:by multiplier:expr)
+     #`(()
+        (begin
+          (unless (exact-positive-integer? initial-capacity)
+            #,(syntax/loc #'initial-capacity
+                (raise-argument-error 'to-vector
+                                      "exact-positive-integer?"
+                                      initial-capacity)))
+          (unless ((and/c exact-integer? (>/c 1)) multiplier)
+            #,(syntax/loc #'multiplier
+                (raise-argument-error 'to-vector
+                                      "(and/c exact-integer? (>/c 1))"
+                                      multiplier))))
+        ([vect (make-vector initial-capacity)] [pos 0])
         #t
         ()
         #t
@@ -89,18 +93,20 @@
                   (vector-set! vect pos body-result)
                   vect]
                  [else
-                  (define new-len (growth-proc.c len))
+                  (define new-len (* multiplier len))
                   (define new-vect (make-vector new-len))
                   (vector-copy! new-vect 0 vect)
                   (vector-set! new-vect pos body-result)
                   new-vect]))
          (add1 pos))
         (vector-copy vect 0 pos))]
-    [(_ #:length l)
-     #'(to-vector #:length l #:fill 0)]
-    [(_ #:length (~var l (expr/c #'exact-nonnegative-integer?))
-        #:fill (~var fill (expr/c #'any/c)))
-     #'(([(len) l.c] [(vect) (make-vector len fill.c)])
+    [(_ #:length len:expr)
+     #'(to-vector #:length len #:fill 0)]
+    [(_ #:length len:expr
+        #:fill fill:expr)
+     #`(([(vect)
+          #,(syntax/loc #'len
+              (make-vector len fill))])
         #f
         ([pos 0])
         (< pos len)
@@ -132,11 +138,11 @@
     #:track-literals
     [(_ [arg:id val:expr] ...+)
      #'(to-fold [arg val] ... #:result (values arg ...))]
-    [(_ [arg:id (~var val (expr/c #'any/c))] ...+ #:result result:expr)
+    [(_ [arg:id val:expr] ...+ #:result result:expr)
      (with-syntax ([(last-body ...) (generate-temporaries #'([arg val] ...))])
        #'(()
           #f
-          ([arg val.c] ...)
+          ([arg val] ...)
           #t
           ()
           #t
@@ -148,13 +154,4 @@
 (define-syntax (to-void stx)
   (syntax-parse stx
     [(_)
-     #'(()
-        #f
-        ()
-        #t
-        ()
-        #t
-        ()
-        #t
-        ()
-        (void))]))
+     #'(() #f () #t () #t () #t () (void))]))

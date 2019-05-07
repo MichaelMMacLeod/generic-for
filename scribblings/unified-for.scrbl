@@ -170,26 +170,20 @@ for use in the @racket[_maybe-accumulator] clause of @racket[for].
                               expandable-option
                               fixed-option)
                (expandable-option (code:line #:grow-from initial-capacity-expr)
-                                  (code:line #:grow-from initial-capacity-expr growth-option))
+                                  (code:line #:grow-from initial-capacity-expr #:by multiplier-expr))
                (fixed-option (code:line #:length length-expr)
-                             (code:line #:length length-expr #:fill fill-expr))
-               (growth-option (code:line #:by multiplier-expr)
-                              (code:line #:with growth-proc))]
+                             (code:line #:length length-expr #:fill fill-expr))]
               #:contracts ([initial-capacity-expr exact-positive-integer?]
                            [length-expr exact-nonnegative-integer?]
                            [fill-expr any/c]
-                           [multiplier-expr (and/c exact-integer? (>=/c 2))]
-                           [growth-proc (->i ([old-size exact-positive-integer?])
-                                             [new-size (old-size)
-                                              (and/c exact-integer? (>/c old-size))])])]{
+                           [multiplier-expr (and/c exact-integer? (>/c 1))])]{
  Accumulates single values into a mutable @racket[vector?].
 
  If @racket[expandable-option] is supplied, @racket[to-vector] will copy the existing
  values to a fresh mutable @racket[vector?] each time iteration exceeds its length. The size of the new
  vector is determined by @racket[growth-option]. If @racket[#:by multiplier-expr] is
  supplied, the length of the new vector will be
- @racket[(* old-length multiplier-expr)]. If @racket[#:with growth-proc] is
- supplied, the length will be @racket[(growth-proc old-length)]. The vector is trimmed
+ @racket[(* old-length multiplier-expr)]. The vector is trimmed
  to the correct size when iteration concludes.
 
  When no options are supplied, @racket[to-vector] uses the @racket[expandable-option]s
@@ -200,13 +194,8 @@ for use in the @racket[_maybe-accumulator] clause of @racket[for].
            (for to-vector
                 ([x (from-range 5)])
              (* x 2))
-           (for (to-vector #:grow-from 10
-                           #:by 2)
-                ([x (from-range 5)])
-             (* x 2))
-           (for (to-vector #:grow-from 10
-                           #:with (λ (old-length)
-                                    (+ old-length 10)))
+           (for (to-vector #:grow-from 1
+                           #:by 3)
                 ([x (from-range 5)])
              (* x 2))]
 

@@ -37,11 +37,6 @@
                   ([x (from-range 3)])
                   x)
                 '(2 1 0))
-  (check-exn exn:fail?
-             (λ ()
-               (for (to-list #:reverse? 'a)
-                 ([x (from-range 3)])
-                 x)))
   (check-equal? (for (to-list)
                   ([x (from-list '())])
                   x)
@@ -64,12 +59,6 @@
   (check-exn exn:fail?
              (λ ()
                (for (to-vector #:grow-from 'a)
-                 ([x (from-range 10)])
-                 x)))
-  (check-exn exn:fail?
-             (λ ()
-               (for (to-vector #:grow-from 1
-                               #:with values)
                  ([x (from-range 10)])
                  x)))
   (check-exn exn:fail?
