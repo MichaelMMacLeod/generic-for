@@ -38,13 +38,27 @@
          clause.post-guard
          (clause.loop-arg ...))]]))
 
+(define-for-syntax (expand-accumulator stx)0
+  (syntax-parse stx
+    [a:accumulator
+     #'(([(a.outer-id ...) a.outer-expr] ...)
+        (a.outer-check ...)
+        ([a.loop-id a.loop-expr] ...)
+        a.pos-guard
+        ([(a.inner-id ...) a.inner-expr] ...)
+        a.pre-guard
+        (a.body-result ...)
+        a.post-guard
+        (a.loop-arg ...)
+        a.done-expr)]))
+
 (define-syntax (unified-for-unoptimized stx)
   (syntax-parse stx
     [(_ ([pattern:expr ...+ iterator:iterator] ...) body ...+)
      #'(unified-for-unoptimized to-void
                                 ([pattern ... iterator] ...)
                                 body ...)]
-    [(_ accumulator:accumulator
+    [(_ accumulator:expanded-accumulator
         ([pattern:expr ...+ iterator:expanded-iterator]
          ...
          [#:when when-expr:expr]
@@ -69,19 +83,28 @@
                      (if when-expr
                          (match-let*-values
                              ([(pattern ...) iterator.match-expr] ...)
-                           (let*-values ([(accumulator.body-result ...)
-                                          (unified-for-unoptimized accumulator
-                                                                   (loop-clause ...)
-                                                                   body ...)])
-                             (if (and accumulator.post-guard iterator.post-guard ...)
-                                 (loop accumulator.loop-arg ... iterator.loop-arg ... ...)
-                                 accumulator.done-expr)))
+                           (loop (unified-for-unoptimized
+                                  (()
+                                   ()
+                                   ([accumulator.loop-id accumulator.loop-id] ...)
+                                   accumulator.pos-guard
+                                   ([(accumulator.inner-id ...)
+                                     accumulator.inner-expr]
+                                    ...)
+                                   accumulator.pre-guard
+                                   (accumulator.body-result ...)
+                                   accumulator.post-guard
+                                   (accumulator.loop-arg ...)
+                                   accumulator.loop-id ...) ; only for to-list
+                                  (loop-clause ...)
+                                  body ...)
+                                 iterator.loop-arg ... ...))
                          (if (and accumulator.post-guard iterator.post-guard ...)
                              (loop accumulator.loop-id ... iterator.loop-id ... ...) ; maybe bad
                              accumulator.done-expr))
                      accumulator.done-expr))
                accumulator.done-expr)))]
-    [(_ accumulator:accumulator
+    [(_ accumulator:expanded-accumulator
         ([pattern:expr ...+ iterator:expanded-iterator] ...)
         body ...+)
      #'(let*-values ([(accumulator.outer-id ...) accumulator.outer-expr]
@@ -113,9 +136,10 @@
         (loop-clause:loop-clause ...)
         body ...+)
      (with-syntax
-       ([(expanded-clause ...)
+       ([expanded-acc (expand-accumulator #'accumulator)]
+        [(expanded-clause ...)
          (map expand-loop-clause (syntax->list #'(loop-clause ...)))])
-       #'(unified-for-unoptimized accumulator
+       #'(unified-for-unoptimized expanded-acc
                                   (expanded-clause ...)
                                   body ...))]))
 

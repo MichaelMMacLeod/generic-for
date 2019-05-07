@@ -16,7 +16,7 @@
 
 (begin-for-syntax
   (define-syntax-class accumulator
-    (pattern unexpanded:expr
+    (pattern (~and unexpanded:expr (~not expanded:expanded-accumulator))
              #:with (([(outer-id:id ...) outer-expr:expr] ...)
                      (outer-check:expr ...)
                      ([loop-id:id loop-expr:expr] ...)
