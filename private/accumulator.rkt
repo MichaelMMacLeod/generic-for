@@ -18,7 +18,7 @@
   (define-syntax-class accumulator
     (pattern unexpanded:expr
              #:with (([(outer-id:id ...) outer-expr:expr] ...)
-                     outer-check:expr
+                     (outer-check:expr ...)
                      ([loop-id:id loop-expr:expr] ...)
                      pos-guard:expr
                      ([(inner-id:id ...) inner-expr:expr] ...)
@@ -36,7 +36,7 @@
 
   (define-syntax-class expanded-accumulator
     (pattern (([(outer-id:id ...) outer-expr:expr] ...)
-              outer-check:expr
+              (outer-check:expr ...)
               ([loop-id:id loop-expr:expr] ...)
               pos-guard:expr
               ([(inner-id:id ...) inner-expr:expr] ...)
@@ -52,7 +52,7 @@
      #'(to-list #:reverse? #t)]
     [(_ #:reverse? reverse?:expr)
      #'(()
-        #f
+        ()
         ([acc '()])
         #t
         ()
@@ -71,8 +71,7 @@
      #'(to-vector #:grow-from initial-capacity #:by 2)]
     [(_ #:grow-from initial-capacity:expr #:by multiplier:expr)
      #`(()
-        (begin
-          (unless (exact-positive-integer? initial-capacity)
+        ((unless (exact-positive-integer? initial-capacity)
             #,(syntax/loc #'initial-capacity
                 (raise-argument-error 'to-vector
                                       "exact-positive-integer?"
@@ -107,7 +106,7 @@
      #`(([(vect)
           #,(syntax/loc #'len
               (make-vector len fill))])
-        #f
+        ()
         ([pos 0])
         (< pos len)
         ()
@@ -123,7 +122,7 @@
   (syntax-parse stx
     [(_)
      #'(()
-        #f
+        ()
         ([table (hash)])
         #t
         ()
@@ -141,7 +140,7 @@
     [(_ [arg:id val:expr] ...+ #:result result:expr)
      (with-syntax ([(last-body ...) (generate-temporaries #'([arg val] ...))])
        #'(()
-          #f
+          ()
           ([arg val] ...)
           #t
           ()
@@ -154,4 +153,4 @@
 (define-syntax (to-void stx)
   (syntax-parse stx
     [(_)
-     #'(() #f () #t () #t () #t () (void))]))
+     #'(() () () #t () #t () #t () (void))]))

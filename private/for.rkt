@@ -23,11 +23,7 @@
           (~describe "iterator" iterator:iterator)] ...)
         body ...+)
      (with-syntax*
-       ([(accumulator-outer-checks ...)
-         (if (equal? #f (syntax-e #'accumulator.outer-check))
-             #'()
-             #'(accumulator.outer-check))]
-        [(iterator-outer-checks ...)
+       ([(iterator-outer-checks ...)
          (foldl (λ (check useful-checks)
                   (if (equal? #f (syntax-e check))
                       useful-checks
@@ -125,18 +121,18 @@
         [outer-form
          (if (and (empty? (syntax->list #'(accumulator.outer-id ... ...)))
                   (empty? (syntax->list #'(iterator.outer-id ... ... ...))))
-             (if (and (empty? (syntax->list #'(accumulator-outer-checks ...)))
+             (if (and (empty? (syntax->list #'(accumulator.outer-check ...)))
                       (empty? (syntax->list #'(iterator-outer-checks ...))))
                  #'loop-form
                  #'(begin
-                     accumulator-outer-checks ...
+                     accumulator.outer-check ...
                      iterator-outer-checks ...
                      loop-form))
              #'(let*-values ([(accumulator.outer-id ...) accumulator.outer-expr]
                              ...
                              [(iterator.outer-id ...) iterator.outer-expr]
                              ... ...)
-                 accumulator-outer-checks ...
+                 accumulator.outer-check ...
                  iterator-outer-checks ...
                  loop-form))])
        #'outer-form)]))
