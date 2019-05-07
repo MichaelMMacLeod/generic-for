@@ -13,7 +13,7 @@
 
 (begin-for-syntax
   (define-syntax-class iterator
-    (pattern unexpanded:expr
+    (pattern (~and unexpanded:expr (~not expanded:expanded-iterator))
              #:with
              (([(outer-id:id ...) outer-expr:expr] ...)
               (outer-check:expr ...)
