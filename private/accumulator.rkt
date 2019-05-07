@@ -162,4 +162,4 @@
 (define-syntax (to-void stx)
   (syntax-parse stx
     [(_)
-     #'(() () () #t () #t () #t () (void))]))
+     #'(() () () #t () #t (_) #t () (void))]))
