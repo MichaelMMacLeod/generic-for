@@ -16,7 +16,7 @@
     (pattern unexpanded:expr
              #:with
              (([(outer-id:id ...) outer-expr:expr] ...)
-              outer-check:expr
+              (outer-check:expr ...)
               ([loop-id:id loop-expr:expr] ...)
               pos-guard:expr
               ([(inner-id:id ...) inner-expr:expr] ...)
@@ -33,7 +33,7 @@
 
   (define-syntax-class expanded-iterator
     (pattern (([(outer-id:id ...) outer-expr:expr] ...)
-              outer-check:expr
+              (outer-check:expr ...)
               ([loop-id:id loop-expr:expr] ...)
               pos-guard:expr
               ([(inner-id:id ...) inner-expr:expr] ...)
@@ -46,7 +46,7 @@
   (syntax-parse stx
     [(_ (~var v (expr/c #'vector?)))
      #'(([(vect) v.c] [(len) (vector-length vect)])
-        #f
+        ()
         ([pos 0])
         (< pos len)
         ()
@@ -61,26 +61,26 @@
      #'(from-range 0 end)]
     [(_ start end)
      #'(from-range start end 1)]
-    [(_ (~var start (expr/c #'real?))
-        (~var end (expr/c #'real?))
-        (~var step (expr/c #'real?)))
+    [(_ start
+        end
+        step)
      #'(()
-        #f
-        ([n start.c])
-        (if (< step.c 0)
-            (> n end.c)
-            (< n end.c))
+        ()
+        ([n start])
+        (if (< step 0)
+            (> n end)
+            (< n end))
         ()
         #t
         n
         #t
-        ((+ n step.c)))]))
+        ((+ n step)))]))
 
 (define-syntax (from-list stx)
   (syntax-parse stx
     [(_ (~var l (expr/c #'list?)))
      #'(()
-        #f
+        ()
         ([lst l.c])
         (pair? lst)
         ()
@@ -95,7 +95,7 @@
      #'(from-naturals 0)]
     [(_ (~var start (expr/c #'exact-nonnegative-integer?)))
      #'(()
-        #f
+        ()
         ([n start.c])
         #t
         ()
@@ -108,7 +108,7 @@
   (syntax-parse stx
     [(_ (~var table (expr/c #'hash?)))
      #'(([(ht) table.c])
-        #f
+        ()
         ([index (hash-iterate-first ht)])
         index
         ()
