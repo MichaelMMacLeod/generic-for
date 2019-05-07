@@ -44,8 +44,11 @@
 
 (define-syntax (from-vector stx)
   (syntax-parse stx
-    [(_ (~var v (expr/c #'vector?)))
-     #'(([(vect) v.c] [(len) (vector-length vect)])
+    [(_ v:expr)
+     #`(([(vect) v] ; make sure we don't inline a vector literal anywhere but here
+         [(len)
+          #,(syntax/loc #'v
+              (vector-length vect))])
         ()
         ([pos 0])
         (< pos len)
@@ -57,15 +60,21 @@
 
 (define-syntax (from-range stx)
   (syntax-parse stx
-    [(_ end)
+    [(_ end:expr)
      #'(from-range 0 end)]
-    [(_ start end)
+    [(_ start:expr end:expr)
      #'(from-range start end 1)]
-    [(_ start
-        end
-        step)
-     #'(()
-        ()
+    [(_ start:expr end:expr step:expr)
+     #`(()
+        ((unless (real? start)
+           #,(syntax/loc #'start
+               (raise-argument-error 'from-range "real?" start)))
+         (unless (real? end)
+           #,(syntax/loc #'end
+               (raise-argument-error 'from-range "real?" end)))
+         (unless (real? step)
+           #,(syntax/loc #'step
+               (raise-argument-error 'from-range "real?" step))))
         ([n start])
         (if (< step 0)
             (> n end)
@@ -78,25 +87,35 @@
 
 (define-syntax (from-list stx)
   (syntax-parse stx
-    [(_ (~var l (expr/c #'list?)))
-     #'(()
+    [(_ l:expr)
+     #`(([(lst) l]) ; make sure we don't inline a list literal anywhere but here
         ()
-        ([lst l.c])
-        (pair? lst)
+        ([iter-lst lst])
+
+        ;; Instead of checking (list? l) at the start of iteration, we check as we
+        ;; go. We get a significant performance boost since we only iterate over l once.
+        (if (pair? iter-lst)
+            #t
+            (if (null? iter-lst)
+                #f
+                #,(syntax/loc #'l
+                    (raise-argument-error 'from-list "list?" lst))))
         ()
         #t
-        (car lst)
+        (car iter-lst)
         #t
-        ((cdr lst)))]))
+        ((cdr iter-lst)))]))
 
 (define-syntax (from-naturals stx)
   (syntax-parse stx
     [(_)
      #'(from-naturals 0)]
-    [(_ (~var start (expr/c #'exact-nonnegative-integer?)))
-     #'(()
-        ()
-        ([n start.c])
+    [(_ start:expr)
+     #`(()
+        ((unless (exact-nonnegative-integer? start)
+           #,(syntax/loc #'start
+               (raise-argument-error 'from-naturals "exact-nonnegative-integer?" start))))
+        ([n start])
         #t
         ()
         #t
@@ -106,9 +125,11 @@
 
 (define-syntax (from-hash stx)
   (syntax-parse stx
-    [(_ (~var table (expr/c #'hash?)))
-     #'(([(ht) table.c])
-        ()
+    [(_ table)
+     #`(([(ht) table]) ; make sure we don't inline a hash literal anywhere but here
+        ((unless (hash? ht)
+           #,(syntax/loc #'table
+               (raise-argument-error 'from-hash "hash?" ht))))
         ([index (hash-iterate-first ht)])
         index
         ()
