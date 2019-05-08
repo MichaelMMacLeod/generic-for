@@ -17,18 +17,27 @@
            racket/set))
 
 (module+ test ;; #:when
-  (check-equal? (for (to-list)
-                  ([x (from-range 3)]
-                   #:when #t
-                   [y (from-range 3)])
-                  (cons x y))
-                '((0 . 0) (0 . 1) (0 . 2) (1 . 0) (1 . 1) (1 . 2) (2 . 0) (2 . 1) (2 . 2)))
-  (check-equal? (for (to-list)
-                  ([x (from-range 3)]
-                   #:when #f
-                   [y (from-range 3)])
-                  (cons x y))
-                '())
+  (check-equal?
+   (for (to-list)
+     ([x (from-range 3)]
+      #:when #t
+      [y (from-range 3)])
+     (cons x y))
+   '((0 . 0) (0 . 1) (0 . 2) (1 . 0) (1 . 1) (1 . 2) (2 . 0) (2 . 1) (2 . 2)))
+  (check-equal?
+   (for (to-list)
+     ([x (from-range 3)]
+      #:when #f
+      [y (from-range 3)])
+     (cons x y))
+   '())
+  (check-equal?
+   (for to-list
+     ([x (from-range 3)]
+      #:when (even? x)
+      [y (from-range 5)])
+     (cons x y))
+   '((0 . 0) (0 . 1) (0 . 2) (0 . 3) (0 . 4) (2 . 0) (2 . 1) (2 . 2) (2 . 3) (2 . 4)))
   #;(check-equal? (with-output-to-string
                   (λ ()
                     (for ([x (from-list '(0 1 2))]
