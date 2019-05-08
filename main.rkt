@@ -18,6 +18,13 @@
 
 (module+ test ;; #:when
   (check-equal?
+   (for to-vector
+     ([k (from-range 3)]
+      #:when (even? k)
+      [v (from-range 2 0 -1)])
+     (cons k v))
+   #((0 . 2) (0 . 1) (2 . 2) (2 . 1)))
+  (check-equal?
    (for (to-list)
      ([x (from-range 3)]
       #:when #t
