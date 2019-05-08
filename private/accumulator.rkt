@@ -26,7 +26,8 @@
                      (body-result:id ...)
                      post-guard:expr
                      (loop-arg:expr ...)
-                     done-expr:expr)
+                     done-expr:expr
+                     nested-done-expr:expr)
              (local-expand (if (identifier? #'unexpanded)
                                (syntax/loc #'unexpanded
                                  (unexpanded))
@@ -44,7 +45,8 @@
               (body-result:id ...)
               post-guard:expr
               (loop-arg:expr ...)
-              done-expr:expr))))
+              done-expr:expr
+              nested-done-expr:expr))))
 
 (define-syntax (to-list stx)
   (syntax-parse stx
@@ -58,7 +60,8 @@
         (body-result)
         #t
         ((cons body-result acc))
-        (reverse acc))]
+        (reverse acc)
+        acc)]
     [(_ #:reverse? reverse?:expr)
      #'(()
         ()
@@ -69,7 +72,8 @@
         (body-result)
         #t
         ((cons body-result acc))
-        (if reverse? (reverse acc) acc))]))
+        (if reverse? (reverse acc) acc)
+        acc)]))
 
 (define-syntax (to-vector stx)
   (syntax-parse stx
@@ -108,7 +112,8 @@
                   (vector-set! new-vect iter-pos body-result)
                   new-vect]))
          (add1 iter-pos))
-        (vector-copy iter-vect 0 iter-pos))]
+        (vector-copy iter-vect 0 iter-pos)
+        (values iter-vect iter-pos))]
     [(_ #:length len:expr)
      #'(to-vector #:length len #:fill 0)]
     [(_ #:length len:expr
@@ -126,6 +131,7 @@
         ((begin
            (vector-set! vect pos body-result)
            (add1 pos)))
+        vect
         vect)]))
 
 (define-syntax (to-hash-set stx)
@@ -140,6 +146,7 @@
         (body-result)
         #t
         ((hash-set table body-result #t))
+        table
         table)]))
 
 (define-syntax (to-fold stx)
@@ -158,9 +165,10 @@
           (last-body ...)
           #t
           (last-body ...)
+          result
           result))]))
 
 (define-syntax (to-void stx)
   (syntax-parse stx
     [(_)
-     #'(() () () #t () #t (_) #t () (void))]))
+     #'(() () () #t () #t (_) #t () (void) (void))]))

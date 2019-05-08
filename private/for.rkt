@@ -86,7 +86,8 @@
                                       (accumulator.body-result ...)
                                       accumulator.post-guard
                                       (accumulator.loop-arg ...)
-                                      accumulator.loop-id ...))])
+                                      accumulator.nested-done-expr
+                                      accumulator.nested-done-expr))])
                              (let-values ([(accumulator.loop-id ...)
                                            (ufor new-acc
                                                  ([nested-pattern ... nested-iterator] ...)
