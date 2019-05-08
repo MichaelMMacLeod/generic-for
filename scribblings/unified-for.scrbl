@@ -20,7 +20,7 @@
 
 This package consolidates the various
 @secref["Iteration_and_Comprehension_Forms"
-         #:doc '(lib "scribblings/reference/reference.scrbl")] into a
+        #:doc '(lib "scribblings/reference/reference.scrbl")] into a
 single @racket[for] macro that compiles directly to efficient
 @seclink["Named_let" #:doc '(lib "scribblings/guide/guide.scrbl")]{named let}
 code. It also allows identifiers to be bound with
@@ -50,9 +50,7 @@ code. It also allows identifiers to be bound with
 
 An @deftech{iterator} is a
 @seclink["stxtrans" #:doc '(lib "scribblings/reference/reference.scrbl")]{Syntax Transformer}
-for use in the @racket[_iterator-clause] of @racket[for]. See
-@seclink["extending-for"]{Extending @racket[for]} for how to implement new
-ones.
+for use in the @racket[_iterator-clause] of @racket[for].
 
 @defform[(from-list lst)
          #:contracts ([lst list?])]{
@@ -117,7 +115,54 @@ ones.
              (display (cons key value)))]
 }
 
-@subsection[#:tag "defining-new-iterators"]{Defining New Iterators}
+@subsection{Defining New Iterators and Accumulators}
+
+Both @tech{iterator}s and @tech{accumulator}s are 
+
+@racketgrammar*[[iterator
+                 (([(outer-id ...) outer-expr] ...)
+                  (outer-check-expr ...)
+                  ([loop-id loop-expr] ...)
+                  pos-guard-expr
+                  ([(inner-id ...) inner-expr] ...)
+                  pre-guard-expr
+                  match-expr
+                  post-guard-expr
+                  (loop-arg-expr ...))]
+                [accumulator
+                 (([(outer-id ...) outer-expr] ...)
+                  (outer-check-expr ...)
+                  ([loop-id loop-expr] ...)
+                  pos-guard-expr
+                  ([(inner-id ...) inner-expr] ...)
+                  pre-guard-expr
+                  (body-result-id ...)
+                  post-guard-expr
+                  (loop-arg-expr ...)
+                  done-expr)]]
+
+@racketblock[(let*-values ([(outer-id ...) outer-expr] ...)
+               outer-check-expr ...
+               (let loop ([loop-id loop-expr] ...)
+                 (when pos-guard-expr
+                   (let*-values ([(inner-id ...) inner-expr] ...)
+                     (when pre-guard-expr
+                       (match match-expr @#,litchar{....})
+                       (when post-guard-expr
+                         (loop loop-arg-expr ...)))))))]
+
+@racketblock[(let*-values ([(outer-id ...) outer-expr])
+               outer-check-expr ...
+               (let loop ([loop-id loop-expr] ...)
+                 (if pos-guard-expr
+                     (let*-values ([(inner-id ...) inner-expr] ...)
+                       (if pre-guard-expr
+                           (let-values ([(body-result-id ...) @#,litchar{....}])
+                             (if post-guard-expr
+                                 (loop loop-arg-expr ...)
+                                 done-expr))
+                           done-expr))
+                     done-expr)))]
 
 @section{Accumulators}
 
@@ -131,8 +176,8 @@ for use in the @racket[_maybe-accumulator] clause of @racket[for].
 
  @examples[#:eval example-evaluator
            (for to-void
-                ([x (from-range 5)]
-                 [y (from-range 4 0 -1)])
+             ([x (from-range 5)]
+              [y (from-range 4 0 -1)])
              (define x+y (+ x y))
              (display x+y)
              x+y)
@@ -160,10 +205,10 @@ for use in the @racket[_maybe-accumulator] clause of @racket[for].
  
  @examples[#:eval example-evaluator
            (for to-list
-                ([x (from-range 5)])
+             ([x (from-range 5)])
              (* x 2))
            (for (to-list #:reverse? #f)
-                ([x (from-range 5)])
+             ([x (from-range 5)])
              (* x 2))]
 }
 
@@ -191,11 +236,11 @@ for use in the @racket[_maybe-accumulator] clause of @racket[for].
  
  @examples[#:eval example-evaluator
            (for to-vector
-                ([x (from-range 5)])
+             ([x (from-range 5)])
              (* x 2))
            (for (to-vector #:grow-from 1
                            #:by 3)
-                ([x (from-range 5)])
+             ([x (from-range 5)])
              (* x 2))]
 
  @margin-note{
@@ -213,10 +258,10 @@ for use in the @racket[_maybe-accumulator] clause of @racket[for].
 
  @examples[#:eval example-evaluator
            (for (to-vector #:length 10)
-                ([x (from-range 5)])
+             ([x (from-range 5)])
              (* x 2))
            (for (to-vector #:length 10 #:fill #f)
-                ([x (from-range 5)])
+             ([x (from-range 5)])
              (* x 2))]
 }
 

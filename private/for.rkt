@@ -45,12 +45,60 @@
                            accumulator.done-expr))
                      accumulator.done-expr))
                accumulator.done-expr)))]
-    #;[(_ accumulator:accumulator
+    [(_ accumulator:accumulator
         ([pattern:expr ...+ iterator:iterator]
          ...
-         #:when when-expr:expr)
+         #:when when-expr:expr
+         [nested-pattern:expr ...+ nested-iterator:iterator]
+         ...)
         body ...+)
-     ]))
+     #'(let*-values ([(accumulator.outer-id ...) accumulator.outer-expr]
+                     ...
+                     [(iterator.outer-id ...) iterator.outer-expr]
+                     ... ...)
+         accumulator.outer-check ...
+         iterator.outer-check ... ...
+         (let loop ([accumulator.loop-id accumulator.loop-expr]
+                    ...
+                    [iterator.loop-id iterator.loop-expr]
+                    ... ...)
+           (if (and accumulator.pos-guard iterator.pos-guard ...)
+               (let*-values ([(accumulator.inner-id ...) accumulator.inner-expr]
+                             ...
+                             [(iterator.inner-id ...) iterator.inner-expr]
+                             ... ...)
+                 (if (and accumulator.pre-guard iterator.pre-guard ...)
+                     (match-let*-values
+                         ([(pattern ...) iterator.match-expr] ...)
+                       (if when-expr
+                           (let-syntax
+                               ([new-acc
+                                 (λ (stx)
+                                   #'(()
+                                      ()
+                                      ([accumulator.loop-id
+                                        accumulator.loop-id] ...)
+                                      accumulator.pos-guard
+                                      ([(accumulator.inner-id ...)
+                                        accumulator.inner-expr]
+                                       ...)
+                                      accumulator.pre-guard
+                                      (accumulator.body-result ...)
+                                      accumulator.post-guard
+                                      (accumulator.loop-arg ...)
+                                      accumulator.loop-id ...))])
+                             (let-values ([(accumulator.loop-id ...)
+                                           (ufor new-acc
+                                                 ([nested-pattern ... nested-iterator] ...)
+                                                 body ...)])
+                               (loop accumulator.loop-id ...
+                                     iterator.loop-arg ... ...)))
+                           (loop accumulator.loop-id ...
+                                 iterator.loop-arg ... ...)))
+                     (if (and accumulator.post-guard iterator.post-guard ...)
+                         (loop accumulator.loop-id ... iterator.loop-arg ... ...)
+                         accumulator.done-expr)))
+               accumulator.done-expr)))]))
 
 #;(define-for-syntax (build-body stx)
   (syntax-parse stx

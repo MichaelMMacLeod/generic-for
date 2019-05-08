@@ -16,7 +16,7 @@
            racket/port
            racket/set))
 
-#;(module+ test ;; #:when
+(module+ test ;; #:when
   (check-equal? (for (to-list)
                   ([x (from-range 3)]
                    #:when #t
@@ -24,7 +24,7 @@
                   (cons x y))
                 '((0 . 0) (0 . 1) (0 . 2) (1 . 0) (1 . 1) (1 . 2) (2 . 0) (2 . 1) (2 . 2)))
   (check-equal? (for (to-list)
-                  ([x (from-range 9)]
+                  ([x (from-range 3)]
                    #:when #f
                    [y (from-range 3)])
                   (cons x y))
