@@ -10,51 +10,16 @@
          "accumulator.rkt"
          "iterator.rkt")
 
-(provide (rename-out [unified-for-unoptimized for])
+(provide (rename-out [ufor for])
          (all-from-out racket/format))
 
-(begin-for-syntax
-  (define-syntax-class when-clause
-    (pattern [#:when when-expr:expr]))
-  (define-syntax-class iterator-clause
-    (pattern [pattern:expr ...+ iterator:iterator]))
-  (define-syntax-class loop-clause
-    (pattern (~or when-clause:when-clause iterator-clause:iterator-clause))))
-
-(define-for-syntax (expand-loop-clause stx)
+(define-syntax (ufor stx)
   (syntax-parse stx
-    [clause:when-clause
-     #'clause]
-    [(pattern:expr ...+ clause:iterator)
-     #'[pattern
-        ...
-        (([(clause.outer-id ...) clause.outer-expr] ...)
-         (clause.outer-check ...)
-         ([clause.loop-id clause.loop-expr] ...)
-         clause.pos-guard
-         ([(clause.inner-id ...) clause.inner-expr] ...)
-         clause.pre-guard
-         clause.match-expr
-         clause.post-guard
-         (clause.loop-arg ...))]]))
-
-(define-for-syntax (expand-accumulator stx)
-  (syntax-parse stx
-    [a:accumulator
-     #'(([(a.outer-id ...) a.outer-expr] ...)
-        (a.outer-check ...)
-        ([a.loop-id a.loop-expr] ...)
-        a.pos-guard
-        ([(a.inner-id ...) a.inner-expr] ...)
-        a.pre-guard
-        (a.body-result ...)
-        a.post-guard
-        (a.loop-arg ...)
-        a.done-expr)]))
-
-(define-for-syntax (build-body stx)
-  (syntax-parse stx
-    [(accumulator:expanded-accumulator iterator:expanded-iterator ... body-form)
+    [(_ ([pattern:expr ...+ iterator:iterator] ...) body ...+)
+     #'(ufor to-void ([pattern ... iterator] ...) body ...)]
+    [(_ accumulator:accumulator
+        ([pattern:expr ...+ iterator:iterator] ...)
+        body ...+)
      #'(let*-values ([(accumulator.outer-id ...) accumulator.outer-expr]
                      ...
                      [(iterator.outer-id ...) iterator.outer-expr]
@@ -71,11 +36,83 @@
                              [(iterator.inner-id ...) iterator.inner-expr]
                              ... ...)
                  (if (and accumulator.pre-guard iterator.pre-guard ...)
-                     body-form
+                     (let-values ([(accumulator.body-result ...)
+                                   (match-let*-values
+                                       ([(pattern ...) iterator.match-expr] ...)
+                                     body ...)])
+                       (if (and accumulator.post-guard iterator.post-guard ...)
+                           (loop accumulator.loop-arg ... iterator.loop-arg ... ...)
+                           accumulator.done-expr))
                      accumulator.done-expr))
-               accumulator.done-expr)))]))
+               accumulator.done-expr)))]
+    #;[(_ accumulator:accumulator
+        ([pattern:expr ...+ iterator:iterator]
+         ...
+         #:when when-expr:expr)
+        body ...+)
+     ]))
 
-(define-for-syntax (expand-unified-for stx)
+#;(define-for-syntax (build-body stx)
+  (syntax-parse stx
+    [(accumulator:accumulator iterator:iterator ... body-form)
+     ]))
+
+#;(begin-for-syntax
+  (define-splicing-syntax-class when-clause
+    (pattern [~seq #:when when-expr:expr]))
+  (define-syntax-class iterator-clause
+    (pattern [pattern:expr ...+ iterator:iterator]))
+  (define-splicing-syntax-class loop-clause
+    (pattern (~or when-clause:when-clause iterator-clause:iterator-clause)))
+  (define-syntax-class expanded-unified-for
+    (pattern (accumulator:accumulator (loop-clause:loop-clause ...) body:expr ...+))))
+
+#;(define-for-syntax (expand-loop-clauses stx)
+  (syntax-parse stx
+    [()
+     (displayln 'empty)
+     #'()]
+    [(clause:when-clause others ...)
+     (displayln 'when-clause)
+     (with-syntax
+       ([(expanded-others ...)
+         (expand-loop-clauses #'(others ...))])
+       #'(clause expanded-others ...))]
+    [([pattern:expr ...+ clause:iterator] others ...)
+     (displayln 'iterator-clause)
+     (with-syntax
+       ([(expanded-others ...)
+         (expand-loop-clauses #'(others ...))])
+       #'([pattern
+           ...
+           (([(clause.outer-id ...) clause.outer-expr] ...)
+            (clause.outer-check ...)
+            ([clause.loop-id clause.loop-expr] ...)
+            clause.pos-guard
+            ([(clause.inner-id ...) clause.inner-expr] ...)
+            clause.pre-guard
+            clause.match-expr
+            clause.post-guard
+            (clause.loop-arg ...))]
+          others ...))]))
+
+#;(define-for-syntax (expand-accumulator stx)
+  (syntax-parse stx
+    [a:accumulator
+     #'(([(a.outer-id ...) a.outer-expr] ...)
+        (a.outer-check ...)
+        ([a.loop-id a.loop-expr] ...)
+        a.pos-guard
+        ([(a.inner-id ...) a.inner-expr] ...)
+        a.pre-guard
+        (a.body-result ...)
+        a.post-guard
+        (a.loop-arg ...)
+        a.done-expr)]))
+
+
+
+#;(define-for-syntax (expand-unified-for stx)
   (syntax-parse stx
     [(accumulator:accumulator
       (loop-clause:loop-clause ...)
@@ -83,13 +120,14 @@
      (with-syntax
        ([expanded-acc (expand-accumulator #'accumulator)]
         [(expanded-clause ...)
-         (map expand-loop-clause (syntax->list #'(loop-clause ...)))])
+         (expand-loop-clauses #'(loop-clause ...))])
        #'(expanded-acc (expanded-clause ...) body ...))]))
 
-(define-syntax (unified-for-unoptimized stx)
+#;(define-syntax (unified-for-unoptimized stx)
   (syntax-parse stx
     [(_ (~optional accumulator #:defaults ([accumulator #'to-void]))
         (loop-clause:loop-clause ...) body ...+)
+     (displayln #'accumulator)
      (with-syntax
        ([(expanded-accumulator (expanded-clause ...) body ...)
          (expand-unified-for #'(accumulator (loop-clause ...) body ...))])
@@ -99,9 +137,10 @@
     [(_ accumulator:expanded-accumulator
         ([pattern:expr ...+ iterator:expanded-iterator]
          ...
-         [#:when when-expr:expr]
+         #:when when-expr:expr
          loop-clause ...+)
         body ...+)
+     (displayln 2)
      (with-syntax
        ([body
          #'(match-let*-values
@@ -133,6 +172,7 @@
     [(_ accumulator:expanded-accumulator
         ([pattern:expr ...+ iterator:expanded-iterator] ...)
         body ...+)
+     (displayln 3)
      (with-syntax
        ([body
          #'(let-values ([(accumulator.body-result ...)
@@ -144,7 +184,7 @@
                  accumulator.done-expr))])
        (build-body #'(accumulator iterator ... body)))]))
 
-(define-syntax (unified-for stx)
+#;(define-syntax (unified-for stx)
   (syntax-parse stx
     [(_ ([pattern:expr ...+ iterator:iterator] ...) body ...+)
      #'(unified-for to-void
