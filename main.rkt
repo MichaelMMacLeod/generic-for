@@ -38,14 +38,15 @@
       [y (from-range 5)])
      (cons x y))
    '((0 . 0) (0 . 1) (0 . 2) (0 . 3) (0 . 4) (2 . 0) (2 . 1) (2 . 2) (2 . 3) (2 . 4)))
-  #;(check-equal? (with-output-to-string
-                  (λ ()
-                    (for to-void
-                      ([x (from-list '(0 1 2))]
-                       #:when #t
-                       [y (from-vector #(0 1 2))])
-                      (display (~a x y)))))
-                "000102101112202122")
+  (check-equal?
+   (with-output-to-string
+     (λ ()
+       (for to-void
+         ([x (from-list '(0 1 2))]
+          #:when #t
+          [y (from-vector #(0 1 2))])
+         (display (~a x y)))))
+   "000102101112202122")
   )
 
 (module+ test ;; to-list

@@ -171,4 +171,4 @@
 (define-syntax (to-void stx)
   (syntax-parse stx
     [(_)
-     #'(() () () #t () #t (_) #t () (void) (void))]))
+     #'(() () () #t () #t (_) #t () (void) (values))]))
