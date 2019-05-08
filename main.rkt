@@ -18,6 +18,14 @@
 
 (module+ test ;; #:when
   (check-equal?
+   (with-output-to-string
+     (λ ()
+       (for ([x (from-range 3)]
+             #:when #t
+             [y (from-range 3)])
+         (display y))))
+   "012012012")
+  (check-equal?
    (for to-vector
      ([k (from-range 3)]
       #:when (even? k)
