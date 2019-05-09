@@ -18,6 +18,18 @@
 
 (module+ test ;; #:when
   (check-equal?
+   (for to-list
+     ([x (from-range 10)]
+      #:when #f)
+     x)
+   '())
+  (check-equal?
+   (for to-list
+     ([x (from-range 10)]
+      #:when #t)
+     x)
+   '(0 1 2 3 4 5 6 7 8 9))
+  (check-equal?
    (with-output-to-string
      (λ ()
        (for ([x (from-range 3)]
