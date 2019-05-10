@@ -9,6 +9,7 @@
                      racket/list
                      racket/math
                      racket/match
+                     syntax/parse
                      unified-for
                      ))
 
@@ -33,6 +34,7 @@ Warning: this package is experimental and subject to breaking changes.
                   [sandbox-error-output 'string])
      (make-evaluator 'racket/base
                      #:requires '(unified-for
+                                  (for-syntax racket)
                                   racket/list
                                   racket/pretty
                                   racket/format))))
@@ -291,3 +293,184 @@ for use in the @racket[_maybe-accumulator] clause of @racket[for]. See
 }
 
 @section[#:tag "extending-for"]{Extending for}
+
+Creating a new @tech{iterator} or @tech{accumulator} involves using
+@racket[define-syntax] to make a
+@seclink["stxtrans"
+         #:doc '(lib "scribblings/reference/reference.scrbl")]{Syntax Transformer}
+that expands into a @racket[syntax] list. It is similar to the process of
+using @racket[:do-in] to extend the traditional
+@seclink["Iteration_and_Comprehension_Forms"
+         #:doc '(lib "scribblings/reference/reference.scrbl")]{for}
+loop. The @racket[for] macro @racket[local-expand]s each @tech{iterator} and
+@tech{accumulator} and splices their results into its own expansion.
+
+@racketgrammar*[[iterator
+                 (([(outer-id ...) outer-expr] ...)
+                  (outer-check-expr ...)
+                  ([loop-id loop-expr] ...)
+                  pos-guard-expr
+                  ([(inner-id ...) inner-expr] ...)
+                  pre-guard-expr
+                  match-expr
+                  post-guard-expr
+                  (loop-arg-expr ...))]
+                [accumulator
+                 (([(outer-id ...) outer-expr] ...)
+                  (outer-check ...)
+                  ([loop-id loop-expr] ...)
+                  pos-guard-expr
+                  ([(inner-id ...) inner-expr] ...)
+                  pre-guard-expr
+                  (body-result-id ...)
+                  post-guard-expr
+                  (loop-arg-expr ...)
+                  done-expr)]]
+
+Both @tech{accumulator}s and @tech{iterator}s expand to similar forms. The first
+element, @racket[([(_outer-id ...) _outer-expr] ...)] specifies identifiers and
+expressions to be bound via @racket[let*-values] outside the loop. This is useful
+when the @tech{iterator} or @tech{accumulator} needs to evaluate an expression only
+once. For example, @racket[to-vector] with the @racket[#:fill] option creates its
+@racket[vector?] here.
+
+The second element, @racket[(_outer-check-expr ...)], specifies a list of expressions which
+are evaluated for their side effects, after @racket[_outer-id]s are bound, and before
+the loop begins. This is useful for checking that all
+sub-forms of the @tech{iterator} or @tech{accumulator} are of valid types. For
+example, @racket[from-range] uses this space to throw an exception if its
+sub-forms do not evaluate to @racket[real?] numbers.
+
+Next is @racket[([_loop-id _loop-expr] ...)]. These identifiers are bound to their
+expressions at the start of the loop, once all @racket[_outer-check]s have been
+evaluated. Later, during the iteration of the @racket[for] form, they are bound to
+the result of evaluating the @racket[_loop-arg]s. For example, the @racket[from-list]
+@tech{iterator} binds
+@racket[_loop-id] to the @racket[list?] being iterated over. The @racket[to-fold]
+@tech{accumulator} uses these bindings to keep track of its @racket[_arg-id]s and
+their bindings.
+
+The @racket[_pos-guard-expr] form is evaluated once at the beginning of each iteration
+of the loop. If it produces a @racket[#t] value, the loop continues. Otherwise,
+iteration ends immediately, and the @tech{accumulator}'s @racket[_done-expr] is
+returned. This form is useful for checking whether the sequence
+being iterated over is empty or not. For example, @racket[from-vector] uses this
+space to ensure that the current index in the vector, which it bound as a
+@racket[_loop-arg] is less than its length. The @racket[from-naturals]
+@tech{iterator} expands here to @racket[#t] its iteration is infinite.
+
+After each @racket[_pos-guard-expr] is checked, @racket[([(_inner-id ...) _inner-expr] ...)]
+is bound via @racket[let*-values]. This is useful for creating bindings that
+differ on each iteration, and happen before the evaluation of @racket[for]'s
+@racket[_body]s.
+
+After @racket[_inner-id]s are bound, the @racket[_pre-guard-expr] is evaluated.
+If it produces a @racket[#t] value, the loop continues. Otherwise, iteration ends
+immediately and the @tech{accumulator}'s @racket[_done-expr] is
+returned. This can be useful for ending iteration based off of a value
+bound to an @racket[_inner-id].
+
+The next form is different for @tech{iterator}s and @tech{accumulator}s. For
+@tech{iterator}s, it is @racket[_match-expr], and it specifies what expression to
+match against @racket[for]'s @racket[_match-pattern]s. For example,
+@racket[from-hash]'s @racket[_match-expr] evaluates to two @racket[values],
+the current key and value of the @racket[hash?] being iterated over. For
+@tech{accumulator}s, this form is @racket[(_body-result-id ...)]. It specifies
+the identifiers to bind via @racket[let-values] to the result of @racket[for]'s
+@racket[_body]s. The @racket[to-list] @tech{accumulator} supplies one identifier
+here, which it @racket[cons]es onto its @racket[_loop-id] in its @racket[_loop-arg-expr].
+
+Both @tech{iterator}s and @tech{accumulator}s then have a @racket[_post-guard-expr].
+If @racket[_post-guard-expr] evaluates to a @racket[#t] value, the loop continues.
+Otherwise, iteration ends immediately and the @tech{accumulator}'s @racket[_done-expr]
+is returned. This can be useful for ending iteration
+based off of a value bound to a @racket[_body-result-id] in the case of
+@tech{accumulator}s, or a side effect of @racket[for]'s @racket[_body]s, in the case
+of @tech{iterator}s.
+
+The @racket[(_loop-arg-expr ...)] form is then evaluated, and its result is
+bound to each @racket[_loop-id]s on the next iteration. An @tech{iterator}, like
+@racket[from-vector], uses this form to step to the next element in the
+sequence, usually by adding @racket[1] to an index, or using a @racket[cdr]-like
+operation. An @tech{accumulator}, like @racket[to-list], uses this form to add
+an element to its collection, usually the one bound by @racket[_body-result-id].
+
+Each @tech{accumulator} must specify one more form, @racket[_done-expr], which
+is evaluated and returned whenever any @racket[_pos-guard-expr],
+@racket[_pre-guard-expr], or @racket[_post-gurd-expr] returns a @racket[#f] value.
+For example, @racket[to-list] with @racket[#:reverse? #t] uses this space to
+@racket[reverse] the accumulated list bound to its @racket[_loop-id].
+
+Here is the full expansion of a @racket[for] form, with one @tech{accumulator}
+bound to @racket[a], and any number of @tech{iterator}s bound to @racket[(i ...)].
+
+@(racketblock
+  (let*-values ([(a.outer-id ...) a.outer-expr] ...
+                [(i.outer-id ...) i.outer-expr] ... ...)
+    a.outer-check-expr ...
+    i.outer-check-expr ... ...
+    (let loop ([a.loop-id a.loop-expr] ...
+               [i.loop-id i.loop-expr] ... ...)
+      (if (and a.pos-guard-expr i.pos-guard-expr ...)
+          (let*-values ([(a.inner-id ...) a.inner-expr] ...
+                        [(i.inner-id ...) i.inner-expr] ... ...)
+            (if (and a.pre-guard-expr i.pre-guard-expr ...)
+                (let-values ([(a.body-result-id ...)
+                              (match-let-values
+                                  ([(pattern ...) i.match-expr] ...)
+                               body ...)])
+                  (if (and a.post-guard-expr i.post-guard-expr ...)
+                      (loop a.loop-arg-expr ... i.loop-arg-expr ... ...)
+                      a.done-expr))
+                a.done-expr))
+          a.done-expr))))
+
+@examples[#:escape get-me-out-of-here
+          (require (for-syntax racket/base syntax/parse)
+                   (prefix-in u: unified-for))
+          (define-syntax (from-vector stx)
+            (syntax-parse stx
+              [(_ v:expr)
+               #`(([(vect) v]
+                   [(len)
+                    #,(syntax/loc #'v
+                        (vector-length vect))])
+                  ()
+                  ([pos 0])
+                  (< pos len)
+                  ()
+                  #t
+                  (vector-ref vect pos)
+                  #t
+                  ((add1 pos)))]))
+          (u:for ([x (from-vector #(0 1 2 3 4 5))])
+            (display x))
+          (eval:error (u:for ([x (from-vector 'not-a-vector)])
+                        (display x)))
+          (define-syntax (to-fold stx)
+            (syntax-parse stx
+              #:track-literals
+              [(_ [arg:id val:expr] ...+)
+               #'(to-fold [arg val] ... #:result (values arg ...))]
+              [(_ [arg:id val:expr] ...+ #:result result:expr)
+               (with-syntax ([(last-body ...) (generate-temporaries #'([arg val] ...))])
+                 #'(()
+                    ()
+                    ([arg val] ...)
+                    #t
+                    ()
+                    #t
+                    (last-body ...)
+                    #t
+                    (last-body ...)
+                    result))]))
+          (u:for (to-fold [factorial 1])
+                 ([x (u:from-range 1 10)])
+            (* factorial x))
+          (define-syntax (to-void stx)
+            (syntax-parse stx
+              [(_)
+               #'(() () () #t () #t (_) #t () (void))]))
+          (u:for to-void
+                 ([x (u:from-range 5)])
+            (display x))]
