@@ -39,7 +39,7 @@
                              ... ...)
                  (if (and accumulator.pre-guard iterator.pre-guard ...)
                      (let-values ([(accumulator.body-result ...)
-                                   (match-let*-values
+                                   (match-let-values
                                        ([(pattern ...) iterator.match-expr] ...)
                                      body ...)])
                        (if (and accumulator.post-guard iterator.post-guard ...)
