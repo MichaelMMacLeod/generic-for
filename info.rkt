@@ -9,6 +9,7 @@
     "expect"
     "sandbox-lib"))
 (define scribblings '(("scribblings/unified-for.scrbl" ())))
-(define pkg-desc "Description Here")
+(define pkg-desc
+  "Consolidates the various flavors of `for` iteration into a single unified for macro.")
 (define version "0.0")
-(define pkg-authors '(michael))
+(define pkg-authors '(michaelmmacleod))
