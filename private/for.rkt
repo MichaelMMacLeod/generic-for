@@ -17,7 +17,8 @@
      #'(unified-for to-void
                     ([pattern ... iterator] ...)
                     body ...)]
-    [(_ accumulator:accumulator
+    [(_ (~optional accumulator:accumulator
+                   #:defaults ([accumulator #'to-void]))
         ([(~describe "match pattern" pattern:expr)
           ...+
           iterator:iterator] ...)
