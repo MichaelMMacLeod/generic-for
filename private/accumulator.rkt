@@ -8,7 +8,7 @@
 (provide (for-syntax accumulator
                      expanded-accumulator)
          vector-copy
-         to-list
+         #;to-list
          to-vector
          to-hash-set
          to-fold
@@ -46,7 +46,8 @@
               (loop-arg:expr ...)
               done-expr:expr))))
 
-(define-syntax (to-list stx)
+
+#;(define-syntax (to-list stx)
   (syntax-parse stx
     [(_)
      #'(()
@@ -69,7 +70,8 @@
         (body-result)
         #t
         ((cons body-result acc))
-        (if reverse? (reverse acc) acc))]))
+        (if reverse? (reverse acc) acc)
+        )]))
 
 (define-syntax (to-vector stx)
   (syntax-parse stx

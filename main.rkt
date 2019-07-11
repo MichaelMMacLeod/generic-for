@@ -3,11 +3,13 @@
 (require racket/contract/base
          "private/accumulator.rkt"
          "private/iterator.rkt"
-         "private/for.rkt")
+         "private/for.rkt"
+         "private/to-list.rkt")
 
 (provide (all-from-out "private/accumulator.rkt"
                        "private/iterator.rkt"
-                       "private/for.rkt"))
+                       "private/for.rkt"
+                       "private/to-list.rkt"))
 
 (module+ test
   (require expect
