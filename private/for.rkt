@@ -1,51 +1,53 @@
 #lang racket/base
 
+;;;
+;;; for.rkt
+;;;
+;;; Provides for, the unified-for loop.
+;;;
+
 (require (for-syntax racket/base
-                     racket/list
-                     racket/syntax
-                     syntax/apply-transformer
-                     syntax/parse)
-         racket/match
-         "accumulator.rkt"
-         "iterator.rkt")
+                     syntax/parse
+                     "syntax-classes.rkt")
+         racket/match)
 
 (provide (rename-out [unified-for for]))
 
+;; This macro provides a general framework for looping. By itself, unified-for
+;; doesn't do much. The interesting aspects of loop functionality come from
+;; which iterators and accumulators are used.
 (define-syntax (unified-for stx)
   (syntax-parse stx
-    [(_ ([pattern:expr ...+ iterator:iterator] ...) body ...+)
-     #'(unified-for to-void
-                    ([pattern ... iterator] ...)
-                    body ...)]
-    [(_ (~optional accumulator:accumulator
-                   #:defaults ([accumulator #'to-void]))
-        ([(~describe "match pattern" pattern:expr)
-          ...+
-          iterator:iterator] ...)
+    [(_ a:accumulator
+        ([(~describe "match pattern" pattern:expr) ...+ i:iterator] ...)
         body ...+)
-     #'(let*-values ([(accumulator.outer-id ...) accumulator.outer-expr]
+     #`(let*-values ([(a.outside-bindings-id ...) a.outside-bindings-expr]
                      ...
-                     [(iterator.outer-id ...) iterator.outer-expr]
+                     [(i.outside-bindings-id ...) i.outside-bindings-expr]
                      ... ...)
-         accumulator.outer-check ...
-         iterator.outer-check ... ...
-         (let loop ([accumulator.loop-id accumulator.loop-expr]
+         a.outside-checks ... i.outside-checks ... ...
+         (let loop ([a.loop-bindings-id a.loop-bindings-expr]
                     ...
-                    [iterator.loop-id iterator.loop-expr]
+                    [i.loop-bindings-id i.loop-bindings-expr]
                     ... ...)
-           (if (and accumulator.pos-guard iterator.pos-guard ...)
-               (let*-values ([(accumulator.inner-id ...) accumulator.inner-expr]
+           (if (and a.inside-guards ... i.inside-guards ... ...)
+               (let*-values ([(a.inside-bindings-id ...) a.inside-bindings-expr]
                              ...
-                             [(iterator.inner-id ...) iterator.inner-expr]
+                             [(i.inside-bindings-id ...) i.inside-bindings-expr]
                              ... ...)
-                 (if (and accumulator.pre-guard iterator.pre-guard ...)
-                     (let-values ([(accumulator.body-result ...)
+                 a.inside-checks ... i.inside-checks ... ...
+                 (if (and a.body-guards ... i.body-guards ... ...)
+                     (let-values ([(a.body-outputs ...)
                                    (match-let-values
-                                       ([(pattern ...) iterator.match-expr] ...)
+                                       ([(pattern ...) i.body-input] ...)
                                      body ...)])
-                       (let*-values ([(accumulator.body-id ...) accumulator.body-expr] ...)
-                         (if (and accumulator.post-guard iterator.post-guard ...)
-                             (loop accumulator.loop-arg ... iterator.loop-arg ... ...)
-                             accumulator.post-done-expr)))
-                     accumulator.pre-done-expr))
-               accumulator.pos-done-expr)))]))
+                       (let*-values ([(a.body-bindings-id ...) a.body-bindings-expr]
+                                     ...
+                                     [(i.body-bindings-id ...) i.body-bindings-expr]
+                                     ... ...)
+                         a.body-checks ... i.body-checks ... ...
+                         (if (and a.recurse-guards ... i.recurse-guards ... ...)
+                             (loop a.recurse-arguments ... i.recurse-arguments ... ...)
+                             a.body-return)))
+                     a.inside-return))
+               a.outside-return)))]))

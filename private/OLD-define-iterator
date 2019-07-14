@@ -1,0 +1,66 @@
+#lang racket/base
+
+;;;
+;;; define-iterator.rkt
+;;;
+;;; Provides define-iterator, an interface for creating new iterators.
+;;;
+
+(require (for-syntax racket/base
+                     racket/syntax
+                     syntax/parse
+                     "accumulator-syntax-classes.rkt"
+                     "iterator-syntax-classes.rkt"
+                     "common-syntax-classes.rkt"))
+
+(provide (all-defined-out))
+
+(define-syntax (define-iterator stx)
+  (syntax-parse stx
+    [(_ name:id
+        [(pattern-directive ...)
+         (~alt (~seq #:declare declare-pattern-id declare-stxclass
+                     (~optional (~seq #:role declare-role-expr)))
+               (~seq #:post post-action-pattern)
+               (~seq #:with with-syntax-pattern with-expr)
+               (~seq #:fail-when fail-when-condition-expr fail-when-message-expr)
+               (~seq #:fail-unless fail-unless-condition-expr fail-unless-message-expr)
+               (~seq #:when when-condition-expr)
+               (~seq #:do [do-def-or-expr ...])
+               (~seq #:undo [undo-def-or-expr ...]))
+         ...
+         outer-bindings:outer-bindings-directive
+         outer-checks:outer-checks-directive
+         initial-arguments:initial-arguments-directive
+         pos-guard:pos-guard-directive
+         inner-bindings:inner-bindings-directive
+         pre-guard:pre-guard-directive
+         bind:bind-directive
+         body-bindings:body-bindings-directive
+         post-guard:post-guard-directive
+         loop-arguments:loop-arguments-directive]
+        ...+)
+     #:with from-name (format-id #'name "from-~a" #'name)
+     #'(define-syntax (from-name stx)
+         (syntax-parse stx
+           [(pattern-directive ...)
+            (~@ #:declare declare-pattern-id declare-stxclass
+                (~? (~@ #:role declare-role-expr))) ...
+            (~@ #:post post-action-pattern) ...
+            (~@ #:with with-syntax-pattern with-expr) ...
+            (~@ #:fail-when fail-when-condition-expr fail-when-message-expr) ...
+            (~@ #:fail-unless fail-unless-condition-expr fail-unless-message-expr) ...
+            (~@ #:when when-condition-expr) ...
+            (~@ #:do [do-def-or-expr ...]) ...
+            (~@ #:undo [undo-def-or-expr ...]) ...
+            #`(outer-bindings.outer-bindings
+               outer-checks.outer-checks
+               initial-arguments.initial-arguments
+               pos-guard.pos-guard
+               inner-bindings.inner-bindings
+               pre-guard.pre-guard
+               bind.bind
+               body-bindings.body-bindings
+               post-guard.post-guard
+               loop-arguments.loop-arguments)]
+           ...))]))

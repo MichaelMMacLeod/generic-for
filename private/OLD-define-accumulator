@@ -1,80 +1,19 @@
 #lang racket/base
 
-(require "accumulator.rkt"
-         "iterator.rkt"
-         "for.rkt"
-         (for-syntax racket/base syntax/parse racket/syntax))
+;;;
+;;; define-accumulator.rkt
+;;;
+;;; Provides define-accumulator, an interface for creating new accumulators.
+;;;
 
-(provide (all-defined-out)
-         (all-from-out "accumulator.rkt"))
+(require (for-syntax racket/base
+                     racket/syntax
+                     syntax/parse
+                     "accumulator-syntax-classes.rkt"
+                     "iterator-syntax-classes.rkt"
+                     "common-syntax-classes.rkt"))
 
-(begin-for-syntax
-  (define-splicing-syntax-class outer-bindings-directive
-    #:attributes (outer-bindings)
-    (pattern (~optional (~seq #:outer-bindings outer-bindings)
-                        #:defaults ([outer-bindings #'()]))))
-
-  (define-splicing-syntax-class outer-checks-directive
-    #:attributes (outer-checks)
-    (pattern (~optional (~seq #:outer-checks outer-checks)
-                        #:defaults ([outer-checks #'()]))))
-
-  (define-splicing-syntax-class initial-arguments-directive
-    #:attributes (initial-arguments)
-    (pattern (~optional (~seq #:initial-arguments initial-arguments)
-                        #:defaults ([initial-arguments #'()]))))
-
-  (define-splicing-syntax-class pos-guard-directive
-    #:attributes (pos-guard)
-    (pattern (~optional (~seq #:pos-guard pos-guard)
-                        #:defaults ([pos-guard #'#t]))))
-
-  (define-splicing-syntax-class pos-done-directive
-    #:attributes (pos-done)
-    (pattern (~optional (~seq #:pos-done pos-done))))
-
-  (define-splicing-syntax-class inner-bindings-directive
-    #:attributes (inner-bindings)
-    (pattern (~optional (~seq #:inner-bindings inner-bindings)
-                        #:defaults ([inner-bindings #'()]))))
-
-  (define-splicing-syntax-class pre-guard-directive
-    #:attributes (pre-guard)
-    (pattern (~optional (~seq #:pre-guard pre-guard)
-                        #:defaults ([pre-guard #'#t]))))
-
-  (define-splicing-syntax-class pre-done-directive
-    #:attributes (pre-done)
-    (pattern (~optional (~seq #:pre-done pre-done))))
-
-  (define-splicing-syntax-class body-results-directive
-    #:attributes (body-results)
-    (pattern (~optional (~seq #:body-results body-results)
-                        #:defaults ([body-results #'(_)]))))
-
-  (define-splicing-syntax-class body-bindings-directive
-    #:attributes (body-bindings)
-    (pattern (~optional (~seq #:body-bindings body-bindings)
-                        #:defaults ([body-bindings #'()]))))
-
-  (define-splicing-syntax-class post-guard-directive
-    #:attributes (post-guard)
-    (pattern (~optional (~seq #:post-guard post-guard)
-                        #:defaults ([post-guard #'#t]))))
-
-  (define-splicing-syntax-class post-done-directive
-    #:attributes (post-done)
-    (pattern (~optional (~seq #:post-done post-done))))
-
-  (define-splicing-syntax-class loop-arguments-directive
-    #:attributes (loop-arguments)
-    (pattern (~optional (~seq #:loop-arguments loop-arguments)
-                        #:defaults ([loop-arguments #'()]))))
-
-  (define-splicing-syntax-class return-directive
-    #:attributes (return)
-    (pattern (~optional (~seq #:return return)
-                        #:defaults ([return #'(void)])))))
+(provide (all-defined-out))
 
 (define-syntax (define-accumulator stx)
   (syntax-parse stx

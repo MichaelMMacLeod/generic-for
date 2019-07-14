@@ -1,22 +1,43 @@
 #lang racket/base
 
-(require racket/contract/base
-         "private/accumulator.rkt"
-         "private/iterator.rkt"
+(require (for-syntax "private/make-accumulator.rkt"
+                     "private/make-iterator.rkt")
+         "private/accumulator-definitions.rkt"
          "private/for.rkt"
-         "private/accumulator-definitions.rkt")
+         "private/iterator-definitions.rkt"
+         "private/syntax-classes.rkt")
 
-(provide (all-from-out "private/accumulator.rkt"
-                       "private/iterator.rkt"
+(provide (for-syntax (all-from-out "private/make-accumulator.rkt"
+                                   "private/make-iterator.rkt"))
+         (all-from-out "private/accumulator-definitions.rkt"
                        "private/for.rkt"
-                       "private/accumulator-definitions.rkt"))
+                       "private/iterator-definitions.rkt"
+                       "private/syntax-classes.rkt"))
 
-(module+ test
-  (require expect
-           expect/rackunit
-           racket/list
-           racket/port
-           racket/set))
+;(require "private/accumulator-definitions.rkt"
+;         "private/accumulator-syntax-classes.rkt"
+;         "private/common-syntax-classes.rkt"
+;         "private/define-accumulator.rkt"
+;         "private/define-iterator.rkt"
+;         "private/for.rkt"
+;         "private/iterator-definitions.rkt"
+;         "private/iterator-syntax-classes.rkt")
+;
+;(provide (all-from-out "private/accumulator-definitions.rkt"
+;                       "private/accumulator-syntax-classes.rkt"
+;                       "private/common-syntax-classes.rkt"
+;                       "private/define-accumulator.rkt"
+;                       "private/define-iterator.rkt"
+;                       "private/for.rkt"
+;                       "private/iterator-definitions.rkt"
+;                       "private/iterator-syntax-classes.rkt"))
+;
+;(module+ test
+;  (require expect
+;           expect/rackunit
+;           racket/list
+;           racket/port
+;           racket/set))
 
 ;(module+ test ;; to-list
 ;  (check-expect (for to-list
