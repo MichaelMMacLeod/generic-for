@@ -74,8 +74,46 @@
            #'((body-bindings.id ...) ...)
            #:with
            (body-bindings-expr ...)
-           #'(body-bindings.expr ...)
-           ))
+           #'(body-bindings.expr ...))
+  (pattern ((outside-bindings:let-values-bindings)
+            (outside-checks:expr ...)
+            (loop-bindings:let-bindings)
+            (inside-guards:expr ...)
+            outside-return:expr
+            (inside-bindings:let-values-bindings)
+            (inside-checks:expr ...)
+            (body-guards:expr ...)
+            inside-return:expr
+            (body-outputs:id ...)
+            (body-bindings:let-values-bindings)
+            (body-checks:expr ...)
+            (recurse-guards:expr ...)
+            body-return:expr
+            (recurse-arguments:expr ...))
+           #:with
+           ((outside-bindings-id ...) ...)
+           #'((outside-bindings.id ...) ...)
+           #:with
+           (outside-bindings-expr ...)
+           #'(outside-bindings.expr ...)
+           #:with
+           (loop-bindings-id ...)
+           #'(loop-bindings.id ...)
+           #:with
+           (loop-bindings-expr ...)
+           #'(loop-bindings.expr ...)
+           #:with
+           ((inside-bindings-id ...) ...)
+           #'((inside-bindings.id ...) ...)
+           #:with
+           (inside-bindings-expr ...)
+           #'(inside-bindings.expr ...)
+           #:with
+           ((body-bindings-id ...) ...)
+           #'((body-bindings.id ...) ...)
+           #:with
+           (body-bindings-expr ...)
+           #'(body-bindings.expr ...)))
 
 (define-syntax-class iterator
   (pattern unexpanded:expr
@@ -123,5 +161,40 @@
            #'((body-bindings.id ...) ...)
            #:with
            (body-bindings-expr ...)
-           #'(body-bindings.expr ...)
-           ))
+           #'(body-bindings.expr ...))
+  (pattern ((outside-bindings:let-values-bindings)
+            (outside-checks:expr ...)
+            (loop-bindings:let-bindings)
+            (inside-guards:expr ...)
+            (inside-bindings:let-values-bindings)
+            (inside-checks:expr ...)
+            (body-guards:expr ...)
+            body-input:expr
+            (body-bindings:let-values-bindings)
+            (body-checks:expr ...)
+            (recurse-guards:expr ...)
+            (recurse-arguments:expr ...))
+           #:with
+           ((outside-bindings-id ...) ...)
+           #'((outside-bindings.id ...) ...)
+           #:with
+           (outside-bindings-expr ...)
+           #'(outside-bindings.expr ...)
+           #:with
+           (loop-bindings-id ...)
+           #'(loop-bindings.id ...)
+           #:with
+           (loop-bindings-expr ...)
+           #'(loop-bindings.expr ...)
+           #:with
+           ((inside-bindings-id ...) ...)
+           #'((inside-bindings.id ...) ...)
+           #:with
+           (inside-bindings-expr ...)
+           #'(inside-bindings.expr ...)
+           #:with
+           ((body-bindings-id ...) ...)
+           #'((body-bindings.id ...) ...)
+           #:with
+           (body-bindings-expr ...)
+           #'(body-bindings.expr ...)))
