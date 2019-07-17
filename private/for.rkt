@@ -20,34 +20,67 @@
 
 (define-syntax (unified-for stx)
   (syntax-parse stx
-    [(_ (~datum *)
-        a:accumulator
-        ([(~describe "match pattern" pattern:expr) ...+ i:iterator])
+    [(_ a:accumulator
+        ([(~describe "match pattern" pattern:expr) ...+ i:iterator]
+         ...
+         (~seq #:when nest-when:expr) ...)
         body ...+)
-     #'(unified-for a ([pattern ... i]) body ...)]
-    [(_ (~datum *)
-        a:accumulator
+     #`(let*-values ([(a.outside-bindings-id ...) a.outside-bindings-expr]
+                     ...
+                     [(i.outside-bindings-id ...) i.outside-bindings-expr]
+                     ... ...)
+         a.outside-checks ... i.outside-checks ... ...
+         (let loop ([a.loop-bindings-id a.loop-bindings-expr]
+                    ...
+                    [i.loop-bindings-id i.loop-bindings-expr]
+                    ... ...)
+           (if (and a.inside-guards ... i.inside-guards ... ...)
+               (let*-values ([(a.inside-bindings-id ...) a.inside-bindings-expr]
+                             ...
+                             [(i.inside-bindings-id ...) i.inside-bindings-expr]
+                             ... ...)
+                 a.inside-checks ... i.inside-checks ... ...
+                 (if (and a.body-guards ... i.body-guards ... ...)
+                     (let-values ([(a.body-outputs ...)
+                                   (match-let-values
+                                       ([(pattern ...) i.body-input] ...)
+                                     body ...)])
+                       (let*-values ([(a.body-bindings-id ...) a.body-bindings-expr]
+                                     ...
+                                     [(i.body-bindings-id ...) i.body-bindings-expr]
+                                     ... ...)
+                         a.body-checks ... i.body-checks ... ...
+                         (if (and a.recurse-guards ... i.recurse-guards ... ...)
+                             (if (and nest-when ...)
+                                 (loop a.recurse-arguments ... i.recurse-arguments ... ...)
+                                 (loop a.loop-bindings-id ... i.recurse-arguments ... ...))
+                             a.body-return)))
+                     a.inside-return))
+               a.outside-return)))]
+    [(_ a:accumulator
         ([(~describe "match pattern" pattern0:expr) ...+ i0:iterator]
-         [(~describe "match pattern" pattern:expr) ...+ i:iterator] ...)
+         ...
+         (~seq #:when nest-when:expr) ...+
+         other-clauses ...+)
         body ...+)
      #`(let*-values ([(a.outside-bindings-id ...) a.outside-bindings-expr]
                      ...
                      [(i0.outside-bindings-id ...) i0.outside-bindings-expr]
-                     ...)
-         a.outside-checks ... i0.outside-checks ...
+                     ... ...)
+         a.outside-checks ... i0.outside-checks ... ...
          (let loop ([a.loop-bindings-id a.loop-bindings-expr]
                     ...
                     [i0.loop-bindings-id i0.loop-bindings-expr]
-                    ...)
-           (if (and a.inside-guards ... i0.inside-guards ...)
+                    ... ...)
+           (if (and a.inside-guards ... i0.inside-guards ... ...)
                (let*-values ([(a.inside-bindings-id ...) a.inside-bindings-expr]
                              ...
                              [(i0.inside-bindings-id ...) i0.inside-bindings-expr]
-                             ...)
-                 a.inside-checks ... i0.inside-checks ...
-                 (if (and a.body-guards ... i0.body-guards ...)
+                             ... ...)
+                 a.inside-checks ... i0.inside-checks ... ...
+                 (if (and a.body-guards ... i0.body-guards ... ...)
                      (match-let-values
-                         ([(pattern0 ...) i0.body-input])
+                         ([(pattern0 ...) i0.body-input] ...)
                        (let-syntax
                            ([nested-accumulator
                              (lambda (stx)
@@ -86,12 +119,14 @@
                                    #'(values a.loop-bindings-id ...)
                                    #:recurse-arguments
                                    #'(a.recurse-arguments ...))]))])
-                         a.body-checks ... i0.body-checks ...
-                         (if (and a.recurse-guards ... i0.recurse-guards ...)
-                             (loop (unified-for *
-                                                nested-accumulator
-                                                ([pattern ... i] ...) body ...)
-                                   i0.recurse-arguments ...)
+                         a.body-checks ... i0.body-checks ... ...
+                         (if (and a.recurse-guards ... i0.recurse-guards ... ...)
+                             (if (and nest-when ...)
+                                 (loop (unified-for nested-accumulator
+                                                    (other-clauses ...) body ...)
+                                       i0.recurse-arguments ... ...)
+                                 (loop a.loop-bindings-id ...
+                                       i0.recurse-arguments ... ...))
                              a.body-return)))
                      a.inside-return))
                a.outside-return)))]
