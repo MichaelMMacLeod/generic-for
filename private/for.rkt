@@ -54,22 +54,38 @@
                                (syntax-parse stx
                                  [(_)
                                   (make-accumulator
-                                   #:outside-bindings #'()
-                                   #:outside-checks #'()
-                                   #:loop-bindings #'([a.loop-bindings-id a.loop-bindings-id] ...)
-                                   #:inside-guards #'(a.inside-guards ...)
-                                   #:return #'(values a.loop-bindings-id ...)
-                                   #:outside-return #'(values a.loop-bindings-id ...)
-                                   #:inside-bindings #'([(a.inside-bindings-id ...) a.inside-bindings-expr] ...)
-                                   #:inside-checks #'(a.inside-checks ...)
-                                   #:body-guards #'(a.body-guards ...)
-                                   #:inside-return #'(values a.loop-bindings-id ...)
-                                   #:body-outputs #'(a.body-outputs ...)
-                                   #:body-bindings #'([(a.body-bindings-id ...) a.body-bindings-expr] ...)
-                                   #:body-checks #'(a.body-checks ...)
-                                   #:recurse-guards #'(a.recurse-guards ...)
-                                   #:body-return #'(values a.loop-bindings-id ...)
-                                   #:recurse-arguments #'(a.recurse-arguments ...))]))])
+                                   #:outside-bindings
+                                   #'()
+                                   #:outside-checks
+                                   #'()
+                                   #:loop-bindings
+                                   #'([a.loop-bindings-id a.loop-bindings-id] ...)
+                                   #:inside-guards
+                                   #'(a.inside-guards ...)
+                                   #:return
+                                   #'(values a.loop-bindings-id ...)
+                                   #:outside-return
+                                   #'(values a.loop-bindings-id ...)
+                                   #:inside-bindings
+                                   #'([(a.inside-bindings-id ...) a.inside-bindings-expr] ...)
+                                   #:inside-checks
+                                   #'(a.inside-checks ...)
+                                   #:body-guards
+                                   #'(a.body-guards ...)
+                                   #:inside-return
+                                   #'(values a.loop-bindings-id ...)
+                                   #:body-outputs
+                                   #'(a.body-outputs ...)
+                                   #:body-bindings
+                                   #'([(a.body-bindings-id ...) a.body-bindings-expr] ...)
+                                   #:body-checks
+                                   #'(a.body-checks ...)
+                                   #:recurse-guards
+                                   #'(a.recurse-guards ...)
+                                   #:body-return
+                                   #'(values a.loop-bindings-id ...)
+                                   #:recurse-arguments
+                                   #'(a.recurse-arguments ...))]))])
                          a.body-checks ... i0.body-checks ...
                          (if (and a.recurse-guards ... i0.recurse-guards ...)
                              (loop (unified-for *
